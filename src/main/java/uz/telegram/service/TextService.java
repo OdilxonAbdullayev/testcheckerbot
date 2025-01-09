@@ -90,4 +90,8 @@ public class TextService {
                 .formatted(savedSubject.getSecurity_key(), savedSubject.getSecurity_key(), length, creator_user, savedSubject.getName());
     }
 
+    public String getInfoButton() {
+        return "<b>\uD83D\uDC4B Assalomu Alaykum aziz foydalanuvchi! \n\nBotimizga xush kelibsiz! Agarda botimizdan foydalanishga qiynalsangiz quyidagilar bilan tanishib chiqing! \n\n✅ Botimizga maxsus link bilan /start bosing, so'ngra test javoblarini yuboring. \n\nAgarda kanalga obuna bo'lish so‘ralsa, pasdagi kanallarga obuna bo'lib «✅ Kanalga Obuna Bo'ldim» tugmasiga bosing.\n\n \uD83E\uDDD1\u200D\uD83D\uDCBB Bot Dasturchisi: @XDasturchi </b>";
+    }
+
 }

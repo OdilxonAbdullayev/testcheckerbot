@@ -1,89 +1,105 @@
-CREATE TABLE IF NOT EXISTS tariffs
+create table admins
 (
-    id            INT AUTO_INCREMENT primary key,
-    name          VARCHAR(255) NOT NULL,
-    student_count INT          NOT NULL,
-    price         BIGINT       NOT NULL,
-    ordering      BIGINT       NOT NULL,
-    created_date  TIMESTAMP DEFAULT CURRENT_TIMESTAMP()
+    id               bigint                              not null
+        primary key,
+    created_users_id bigint                              not null,
+    created_date     timestamp default CURRENT_TIMESTAMP null,
+    constraint admins_ibfk_1
+        foreign key (created_users_id) references users (id)
 );
 
-CREATE TABLE IF NOT EXISTS user_statuses
+create index created_users_id
+    on admins (created_users_id);
+
+create table answer
 (
-    id           INT AUTO_INCREMENT primary key,
-    name         VARCHAR(255) NOT NULL,
-    created_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP()
+    id              bigint auto_increment
+        primary key,
+    answer          varchar(255)                        not null,
+    score           float                               null,
+    subject_id      bigint                              not null,
+    created_date    timestamp default CURRENT_TIMESTAMP null,
+    creator_user_id bigint                              not null,
+    constraint answer_ibfk_1
+        foreign key (subject_id) references subject (id),
+    constraint answer_ibfk_2
+        foreign key (creator_user_id) references users (id)
 );
 
-CREATE TABLE IF NOT EXISTS users
+create index creator_user_id
+    on answer (creator_user_id);
+
+create index subject_id
+    on answer (subject_id);
+
+create table channel
 (
-    id               bigint primary key,
-    step             VARCHAR(1000),
-    balance          BIGINT    DEFAULT 0,
-    tariff_id        INT NOT NULL,
-    status_id        INT NOT NULL,
-    tariff_date_from TIMESTAMP,
-    tariff_date_to   TIMESTAMP,
-    created_date     TIMESTAMP DEFAULT CURRENT_TIMESTAMP(),
-    updated_date     TIMESTAMP DEFAULT CURRENT_TIMESTAMP(),
-    FOREIGN KEY (tariff_id) REFERENCES tariffs (id),
-    FOREIGN KEY (status_id) REFERENCES user_statuses (id)
+    id               bigint                              not null
+        primary key,
+    created_users_id bigint                              not null,
+    created_date     timestamp default CURRENT_TIMESTAMP null,
+    constraint channel_ibfk_1
+        foreign key (created_users_id) references users (id)
 );
 
-CREATE TABLE IF NOT EXISTS school
+create index created_users_id
+    on channel (created_users_id);
+
+create table sender
 (
-    id           BIGINT AUTO_INCREMENT primary key,
-    name         VARCHAR(250) NOT NULL,
-    users_id     BIGINT       NOT NULL,
-    created_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP(),
-    FOREIGN KEY (users_id) REFERENCES users (id) ON delete CASCADE ON UPDATE CASCADE
+    id              bigint auto_increment
+        primary key,
+    sendStatus      varchar(50) null,
+    startTime       varchar(50) null,
+    sendCount       bigint      null,
+    sendLimitCount  bigint      null,
+    sendUser        bigint      null,
+    notSendUser     bigint      null,
+    messageId       bigint      null,
+    admin_id        bigint      null,
+    admin_messageId bigint      null
 );
 
-CREATE TABLE IF NOT EXISTS classes
+create table subject
 (
-    id           BIGINT AUTO_INCREMENT primary key,
-    name         VARCHAR(250) NOT NULL,
-    school_id    BIGINT       NOT NULL,
-    created_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP(),
-    FOREIGN KEY (school_id) REFERENCES school (id) ON delete CASCADE ON UPDATE CASCADE
+    id              bigint auto_increment
+        primary key,
+    name            varchar(255)                               not null,
+    security_key    varchar(255)                               not null,
+    quiz_type       enum ('MILLIY_SERTIFIKAT', 'ATTESTATSIYA') not null,
+    created_date    timestamp default CURRENT_TIMESTAMP        null,
+    update_date     timestamp default CURRENT_TIMESTAMP        null,
+    created_user_id bigint                                     not null,
+    constraint security_key
+        unique (security_key),
+    constraint subject_ibfk_1
+        foreign key (created_user_id) references users (id)
 );
 
-CREATE TABLE IF NOT EXISTS students
+create index created_user_id
+    on subject (created_user_id);
+
+create table user_statuses
 (
-    id                 BIGINT AUTO_INCREMENT primary key,
-    fio                VARCHAR(250) NOT NULL,
-    login              VARCHAR(100) NOT NULL,
-    password           VARCHAR(100) NOT NULL,
-    class_id           BIGINT       NOT NULL,
-    last_login_date    TIMESTAMP,
-    last_response_msg  VARCHAR(1000),
-    last_response_date TIMESTAMP,
-    progressing        INT,
-    updated_date       TIMESTAMP DEFAULT CURRENT_TIMESTAMP(),
-    created_date       TIMESTAMP DEFAULT CURRENT_TIMESTAMP(),
-    FOREIGN KEY (class_id) REFERENCES classes (id) ON delete CASCADE ON UPDATE CASCADE
+    id           int auto_increment
+        primary key,
+    name         varchar(255)                        not null,
+    created_date timestamp default CURRENT_TIMESTAMP null
 );
 
-CREATE TABLE IF NOT EXISTS channel
+create table users
 (
-    id               BIGINT primary key,
-    created_users_id BIGINT,
-    created_date     TIMESTAMP DEFAULT CURRENT_TIMESTAMP(),
-    FOREIGN KEY (created_users_id) REFERENCES users (id)
+    id                   bigint                              not null
+        primary key,
+    step                 varchar(1000)                       null,
+    status_id            int                                 not null,
+    username             varchar(255)                        not null,
+    current_security_key varchar(255)                        null,
+    created_date         timestamp default CURRENT_TIMESTAMP null,
+    updated_date         timestamp default CURRENT_TIMESTAMP null,
+    constraint users_ibfk_1
+        foreign key (status_id) references user_statuses (id)
 );
 
-CREATE TABLE IF NOT EXISTS sender
-(
-    id              BIGINT(20) NOT NULL AUTO_INCREMENT,
-    sendStatus      VARCHAR(50),
-    startTime       VARCHAR(50),
-    sendCount       BIGINT(30),
-    sendLimitCount  BIGINT(30),
-    sendUser        BIGINT(30),
-    notSendUser     BIGINT(30),
-    messageId       BIGINT(30),
-    admin_id        BIGINT(30),
-    admin_messageId BIGINT(30),
-    PRIMARY KEY (id)
-);
-
+create index status_id
+    on users (status_id);

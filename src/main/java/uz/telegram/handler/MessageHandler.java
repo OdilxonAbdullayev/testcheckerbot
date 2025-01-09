@@ -136,6 +136,11 @@ public class MessageHandler {
                         messageService.sendMessage(getChatId(), textService.getChooseButton("Test turlarini"), KeyboardService.getQuizType());
                         return;
                     }
+                    case Constants.BotCommand.INFO -> {
+                        messageService.sendMessage(getChatId(), textService.getInfoButton());
+                        return;
+                    }
+
                 }
 
             if (user.getStep() != null) {

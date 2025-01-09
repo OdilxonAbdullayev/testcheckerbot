@@ -66,6 +66,7 @@ public class KeyboardService {
         KeyboardButton channelButton = new KeyboardButton(Constants.BotCommand.BUTTON_CHANNEL);
         KeyboardButton adminButton = new KeyboardButton(Constants.BotCommand.BUTTON_ADMIN);
         KeyboardButton sendMessageButton = new KeyboardButton(Constants.BotCommand.BUTTON_SEND_MESSAGE);
+        KeyboardButton information = new KeyboardButton(Constants.BotCommand.INFO);
         KeyboardButton createTest = new KeyboardButton(Constants.BotCommand.CREATE_TEST);
         KeyboardRow keyboardButtons = new KeyboardRow();
 
@@ -75,6 +76,7 @@ public class KeyboardService {
             keyboardButtons.add(createTest);
             rows.add(new KeyboardRow(List.of(adminButton, statisticButton)));
             rows.add(new KeyboardRow(List.of(channelButton, sendMessageButton)));
+            rows.add(new KeyboardRow(List.of(information)));
         }
 
         reply.setKeyboard(rows);

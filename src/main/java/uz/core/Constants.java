@@ -14,6 +14,7 @@ public interface Constants {
         String BACK_BUTTON_TEXT = "⬅\uFE0F Orqaga qaytish";
         String BUTTON_DELETE = "\uD83D\uDDD1 O'chirish";
         String BUTTON_ADD = "➕ Qo'shish";
+        String INFO = "\uD83D\uDCDAQo'llanma";
 
         String BUTTON_STATISTIC = "\uD83D\uDCCA Statistika";
         String BUTTON_SEND_MESSAGE = "\uD83D\uDCE4 Xabar yuborish";

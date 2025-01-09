@@ -51,6 +51,7 @@ public class MessageService {
 
             sendMessage.setChatId(chatId);
             sendMessage.setText(text);
+            sendMessage.setDisableWebPagePreview(true);
             sendMessage.setParseMode("HTML");
 
             BaseTelegramBot.getSender().execute(sendMessage);
