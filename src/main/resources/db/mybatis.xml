@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!-- Mybatis config sample -->
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+    <properties resource="db/db.properties"></properties>
+
+    <settings>
+        <setting name="defaultFetchSize" value="100"/>
+        <setting name="mapUnderscoreToCamelCase" value="false"/>
+    </settings>
+
+    <environments default="development">
+        <environment id="development">
+            <transactionManager type="JDBC"/>
+            <dataSource type="POOLED">
+                <property name="driver" value="com.mysql.cj.jdbc.Driver"/>
+                <property name="url" value="${db.url}"/>
+                <property name="username" value="${db.username}"/>
+                <property name="password" value="${db.password}"/>
+            </dataSource>
+        </environment>
+    </environments>
+    <mappers>
+        <mapper resource="db/sqlmap/User.xml"/>
+        <mapper resource="db/sqlmap/Answer.xml"/>
+        <mapper resource="db/sqlmap/Subject.xml"/>
+        <mapper resource="db/sqlmap/Channel.xml"/>
+        <mapper resource="db/sqlmap/Common.xml"/>
+        <mapper resource="db/sqlmap/Admin.xml"/>
+    </mappers>
+</configuration>

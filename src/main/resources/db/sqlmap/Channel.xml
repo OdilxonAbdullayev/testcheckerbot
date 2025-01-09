@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="Channel">
+
+    <select id="selectChannel" parameterType="map" resultType="uz.db.entity.ChannelEntity">
+        select *
+        from channel
+    </select>
+
+    <!--   ACTIONS -->
+
+    <insert id="insertChannel" parameterType="map">
+        INSERT INTO channel (id, created_users_id)
+        values (#{id}, #{created_users_id})
+    </insert>
+
+    <delete id="deleteChannel" parameterType="map">
+        DELETE
+        FROM channel
+        where id = #{id}
+    </delete>
+
+</mapper>
