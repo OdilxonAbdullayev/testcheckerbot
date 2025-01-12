@@ -133,12 +133,16 @@ public class MessageHandler {
                     } else if (subjectEntity.getQuiz_type().equals(QuizType.MILLIY_SERTIFIKAT)) {
                         SertificatTestCheckerMilliyDto testCheckerMilliyDto = new SertificatTestCheckerMilliyDto();
                         Map<String, Object> calculate = calculate(userAnswer, allAnswerBySubjectId);
-                        testCheckerMilliyDto.setPart_1((float) calculate.get("1-12"));
-                        testCheckerMilliyDto.setPart_2((float) calculate.get("13-17"));
-                        testCheckerMilliyDto.setPart_3((float) calculate.get("18-22"));
-                        testCheckerMilliyDto.setPart_4((float) calculate.get("33-35"));
+                        float a = (float) calculate.get("1-12");
+                        float b = (float) calculate.get("13-17");
+                        float c = (float) calculate.get("18-22");
+                        float d = (float) calculate.get("33-35");
+                        testCheckerMilliyDto.setPart_1(Float.valueOf(String.format("%.1f", (a))));
+                        testCheckerMilliyDto.setPart_2(Float.valueOf(String.format("%.1f", (b))));
+                        testCheckerMilliyDto.setPart_3(Float.valueOf(String.format("%.1f", (c))));
+                        testCheckerMilliyDto.setPart_4(Float.valueOf(String.format("%.1f", (d))));
                         testCheckerMilliyDto.setFio(user.getUsername());
-                        testCheckerMilliyDto.setOverallScore(testCheckerMilliyDto.getPart_1() + testCheckerMilliyDto.getPart_2() + testCheckerMilliyDto.getPart_3() + testCheckerMilliyDto.getPart_4());
+                        testCheckerMilliyDto.setOverallScore(Float.valueOf(String.format("%.1f", (testCheckerMilliyDto.getPart_1() + testCheckerMilliyDto.getPart_2() + testCheckerMilliyDto.getPart_3() + testCheckerMilliyDto.getPart_4()))));
 
                         String base64Certificate = certificateService.getMilliyCertificate(testCheckerMilliyDto);
                         if (base64Certificate.equals("")) {
