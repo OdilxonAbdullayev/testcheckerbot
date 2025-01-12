@@ -1,6 +1,7 @@
 package uz.telegram.service;
 
 
+import uz.core.utils.PropertiesUtils;
 import uz.db.entity.AllStatisticEntity;
 import uz.db.entity.AnswerEntity;
 import uz.db.entity.SubjectEntity;
@@ -86,8 +87,9 @@ public class TextService {
     }
 
     public String createTestSuccess(SubjectEntity savedSubject, int length, String creator_user) {
-        return "<b>✅Test bazaga qo`shildi.\n\nTest kodi: %s \n\uD83D\uDD17Test link: https://t.me/translateentouzbot?start=%s \nSavollar soni: %s ta.\nTest yaratuvchisi: %s \nFan: %s \n </b>"
-                .formatted(savedSubject.getSecurity_key(), savedSubject.getSecurity_key(), length, creator_user, savedSubject.getName());
+        String telegramBotName = PropertiesUtils.getTelegramBotName();
+        return "<b>✅Test bazaga qo`shildi.\n\nTest kodi: %s \n\uD83D\uDD17Test link: https://t.me/%s?start=%s \nSavollar soni: %s ta.\nTest yaratuvchisi: %s \nFan: %s \n </b>"
+                .formatted(savedSubject.getSecurity_key(), telegramBotName, savedSubject.getSecurity_key(), length, creator_user, savedSubject.getName());
     }
 
     public String getInfoButton() {
@@ -112,12 +114,13 @@ public class TextService {
         String baseInfo = String.format(
                 "<b>\u2139\ufe0fTest haqida ma'lumot.\n\n" +
                 "Test kodi: %s\n" +
-                "\ud83d\udd17Test link: https://t.me/translateentouzbot?start=%s\n" +
+                "\ud83d\udd17Test link: https://t.me/%s?start=%s\n" +
                 "Savollar soni: %d ta.\n" +
                 "Test turi: %s\n" +
                 "Test yaratuvchisi: %s\n" +
                 "Fan: %s\n",
                 testCode,
+                PropertiesUtils.getTelegramBotName(),
                 testCode,
                 length,
                 quizType.name(),

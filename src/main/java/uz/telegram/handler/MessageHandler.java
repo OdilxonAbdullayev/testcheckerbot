@@ -371,42 +371,6 @@ public class MessageHandler {
         }
 
         if (user.getStep() == null) {
-//            if (!getText().startsWith("test") && getText().contains("*")) {
-//                String security_key = getText().substring(0, getText().indexOf('*'));
-//                Optional<SubjectEntity> optionalSubject = subjectRepository.getOne(new HashMap<>() {{
-//                    put("security_key", security_key);
-//                }}).getData();
-//
-//                if (optionalSubject.isPresent()) {
-//                    SubjectEntity subjectEntity = optionalSubject.get();
-//                    int starIndex = getText().indexOf('*');
-//                    if (starIndex != -1 && starIndex < getText().length() - 1) {
-//                        String getAnswer = getText().substring(starIndex + 1).replaceAll("[^a-zA-Z]", "");
-//                        List<AnswerEntity> allAnswerBySubjectId = AppUtils.getAllAnswerBySubjectId(subjectEntity.getId());
-//                        if (getAnswer.length() == allAnswerBySubjectId.size()) {
-//                            Map<String, Object> result = check(getAnswer, allAnswerBySubjectId);
-//                            int correctCount = (int) result.get("correctCount");
-//                            int incorrectCount = (int) result.get("incorrectCount");
-//                            double totalScore = (double) result.get("totalScore");
-//                            double accuracyPercentage = (double) result.get("accuracyPercentage");
-//
-//                            String textServiceResult = textService.getResult(security_key, subjectEntity.getName(), allAnswerBySubjectId.size(), correctCount, incorrectCount, accuracyPercentage, totalScore, subjectEntity.getQuiz_type());
-//                            messageService.sendMessage(getChatId(), textServiceResult, KeyboardService.getMainKeyboard(user));
-//                            messageService.sendMessageToAdmin(user, PropertiesUtils.getAdmins(), textServiceResult);
-//                            return;
-//                        } else {
-//                            messageService.sendMessage(getChatId(), textService.errorSendAnswerCount(security_key, getAnswer.length(), allAnswerBySubjectId.size()), KeyboardService.getMainKeyboard(user));
-//                            return;
-//                        }
-//                    } else {
-//                        messageService.sendMessage(getChatId(), textService.subjectNotFound(), KeyboardService.getMainKeyboard(user));
-//                        return;
-//                    }
-//                } else {
-//                    messageService.sendMessage(getChatId(), textService.subjectNotFound(), KeyboardService.getMainKeyboard(user));
-//                    return;
-//                }
-//            }
             messageService.sendMessage(getChatId(), "<b>\uD83D\uDC4BAssalomu alaykum\n\nBotimizga xush kelibsiz botimz faqat maxsus link orqali kirganda ishlaydi iltimos maxsus link orqali kiring va testlaringizni javobini yuboring</b>", KeyboardService.getMainKeyboard(user));
         }
 
