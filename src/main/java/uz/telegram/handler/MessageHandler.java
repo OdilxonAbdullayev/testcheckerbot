@@ -87,23 +87,40 @@ public class MessageHandler {
             if (optionalSubject.isPresent()) {
                 SubjectEntity subjectEntity = optionalSubject.get();
                 List<AnswerEntity> allAnswerBySubjectId = AppUtils.getAllAnswerBySubjectId(subjectEntity.getId());
-                if (getText().length() == allAnswerBySubjectId.size()) {
-                    Map<String, Object> result = check(getText(), allAnswerBySubjectId);
+                String answers = getText().replaceAll("[0-9]", "");
+
+                if (answers.length() == allAnswerBySubjectId.size()) {
+                    Map<String, Object> result = check(answers, allAnswerBySubjectId);
                     int correctCount = (int) result.get("correctCount");
                     int incorrectCount = (int) result.get("incorrectCount");
                     double totalScore = (double) result.get("totalScore");
+                    List<String> incorrectAnswers = (List<String>) result.get("incorrectAnswers");
                     double accuracyPercentage = (double) result.get("accuracyPercentage");
 
-                    String textServiceResult = textService.getResult(security_key, subjectEntity.getName(), allAnswerBySubjectId.size(), correctCount, incorrectCount, accuracyPercentage, totalScore, subjectEntity.getQuiz_type());
+                    String textServiceResult = textService.getResult(security_key, subjectEntity.getName(), allAnswerBySubjectId.size(), correctCount, incorrectCount, accuracyPercentage, totalScore, incorrectAnswers, subjectEntity.getQuiz_type());
                     messageService.sendMessage(getChatId(), textServiceResult, KeyboardService.getMainKeyboard(user));
-                    messageService.sendMessageToAdmin(user, PropertiesUtils.getAdmins(), textServiceResult);
+                    messageService.sendMessageToAdmin(user, PropertiesUtils.getAdmins(), textServiceResult, answers);
                     Message message = messageService.sendMessage(getChatId(), "<b>⏬Sertifikat yuklanmoqda...</b>", true);
+
                     if (subjectEntity.getQuiz_type().equals(QuizType.ATTESTATSIYA)) {
                         SertificatAttestatsiyaEntity sertificatAttestatsiyaEntity = new SertificatAttestatsiyaEntity();
                         sertificatAttestatsiyaEntity.setFio(user.getUsername());
-                        sertificatAttestatsiyaEntity.setSort("OLIY");
+                        if (totalScore >= 60 && totalScore < 70) {
+                            sertificatAttestatsiyaEntity.setSort("Toifa 2");
+                        } else if (totalScore >= 70 && totalScore < 80) {
+                            sertificatAttestatsiyaEntity.setSort("Toifa 1");
+                        } else if (totalScore >= 80) {
+                            sertificatAttestatsiyaEntity.setSort("Olit toifa");
+                        } else if (totalScore < 60) {
+                            sertificatAttestatsiyaEntity.setSort("-");
+                        }
+
+                        if (totalScore >= 86) {
+                            sertificatAttestatsiyaEntity.setFor70Score((float) totalScore);
+                        } else {
+                            sertificatAttestatsiyaEntity.setFor70Score(0F);
+                        }
                         sertificatAttestatsiyaEntity.setOverallScore(Float.valueOf(String.format("%.1f", totalScore)));
-                        sertificatAttestatsiyaEntity.setFor70Score(Float.valueOf(String.format("%.1f", (totalScore / 2))));
 
                         String base64Certificate = certificateService.getAttestatsiyaCertificate(sertificatAttestatsiyaEntity);
 
@@ -117,7 +134,7 @@ public class MessageHandler {
                         sendPhotoFromJson(base64Certificate);
                     } else if (subjectEntity.getQuiz_type().equals(QuizType.MILLIY_SERTIFIKAT)) {
                         SertificatTestCheckerMilliyDto testCheckerMilliyDto = new SertificatTestCheckerMilliyDto();
-                        Map<String, Object> calculate = calculate(getText(), allAnswerBySubjectId);
+                        Map<String, Object> calculate = calculate(answers, allAnswerBySubjectId);
                         testCheckerMilliyDto.setPart_1((float) calculate.get("1-12"));
                         testCheckerMilliyDto.setPart_2((float) calculate.get("13-17"));
                         testCheckerMilliyDto.setPart_3((float) calculate.get("18-22"));
@@ -141,7 +158,7 @@ public class MessageHandler {
                     userRepository.update(user);
                     return;
                 } else {
-                    messageService.sendMessage(getChatId(), textService.errorSendAnswerCount(security_key, getText().length(), allAnswerBySubjectId.size()), KeyboardService.getMainKeyboard(user));
+                    messageService.sendMessage(getChatId(), textService.errorSendAnswerCount(security_key, answers.length(), allAnswerBySubjectId.size()), KeyboardService.getMainKeyboard(user));
                     return;
                 }
 
@@ -154,13 +171,7 @@ public class MessageHandler {
 
         }
 
-        if (PropertiesUtils.getAdmins().
-
-                stream().
-
-                anyMatch(adminEntity -> adminEntity.getId().
-
-                        equals(user.getId()))) {
+        if (PropertiesUtils.getAdmins().stream().anyMatch(adminEntity -> adminEntity.getId().equals(user.getId()))) {
             if (user.getStep() == null)
                 switch (getText()) {
                     case Constants.BotCommand.BUTTON_STATISTIC -> {
@@ -203,6 +214,11 @@ public class MessageHandler {
                     }
 
                     case Constants.BotCommand.MY_TESTS -> {
+                        DDLResponse<List<SubjectEntity>> response = subjectRepository.getList(Map.of());
+                        if (response.getData().size() == 0) {
+                            messageService.sendMessage(getChatId(), "Birorta ham test mavjud emas❗️");
+                            return;
+                        }
                         messageService.sendMessage(getChatId(), textService.getChooseButton("qidiruv turlaridan"), KeyboardService.getFilter());
                         return;
                     }
@@ -302,13 +318,13 @@ public class MessageHandler {
                 if (user.getStep().equals(Constants.BotCommand.ATTESTATSIYA)) {
                     int firstIndex = getText().indexOf("*");
                     int secondIndex = getText().indexOf("*", firstIndex + 1);
+                    String answers = getText().substring(secondIndex + 1).replaceAll("[0-9]", "");
 
                     if (firstIndex != -1 && secondIndex != -1
                         && firstIndex + 1 < getText().length()
                         && secondIndex + 1 < getText().length()) {
 
                         String subject_name = getText().substring(firstIndex + 1, secondIndex);
-                        String answers = getText().substring(secondIndex + 1);
 
                         SubjectEntity savedSubject = createSubject(getChatId(), subject_name, QuizType.ATTESTATSIYA);
                         SubjectEntity subjectEntity = subjectRepository.getOne(new HashMap<>() {{
@@ -328,7 +344,7 @@ public class MessageHandler {
                 if (user.getStep().equals(Constants.BotCommand.MILLIY_SERTIFIKAT)) {
                     int firstIndex = getText().indexOf("*");
                     int secondIndex = getText().indexOf("*", firstIndex + 1);
-                    String answers = getText().substring(secondIndex + 1);
+                    String answers = getText().substring(secondIndex + 1).replaceAll("[0-9]", "");
 
                     if (firstIndex != -1 && secondIndex != -1
                         && firstIndex + 1 < getText().length()
@@ -438,7 +454,7 @@ public class MessageHandler {
             answer.setAnswer(String.valueOf(answerChar));
 
             if (quizType.getDisplayName().equals(QuizType.ATTESTATSIYA.name())) {
-                answer.setScore(1.1F);
+                answer.setScore(2F);
             } else if (quizType.getDisplayName().equals(QuizType.MILLIY_SERTIFIKAT.name())) {
                 answer.setScore(milliyBallar.get(i));
             }
@@ -470,6 +486,8 @@ public class MessageHandler {
         int incorrectCount = 0;
         double totalScore = 0;
 
+        List<String> incorrectAnswers = new ArrayList<>();
+
         for (int i = 0; i < allAnswerBySubjectId.size(); i++) {
             char userChar = userAnswer.charAt(i);
             String correctAnswer = allAnswerBySubjectId.get(i).getAnswer();
@@ -480,6 +498,7 @@ public class MessageHandler {
                 totalScore += score;
             } else {
                 incorrectCount++;
+                incorrectAnswers.add((i + 1) + ". " + userChar + "  ");
             }
         }
 
@@ -490,9 +509,11 @@ public class MessageHandler {
         result.put("incorrectCount", incorrectCount);
         result.put("totalScore", totalScore);
         result.put("accuracyPercentage", accuracyPercentage);
+        result.put("incorrectAnswers", incorrectAnswers);
 
         return result;
     }
+
 
     public void sendPhotoFromJson(String jsonResponse) {
         try {

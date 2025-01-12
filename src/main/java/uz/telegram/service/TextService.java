@@ -48,7 +48,7 @@ public class TextService {
 
 
     public String getUsernameExample() {
-        return "Hurmatli foydalanuvchi ism familiyangizni quyidagicha  kiriting:\n\n``` fio*familiya ͏ism ```\nMisol:\n``` fio*Abdullayev ͏Odilxon ```";
+        return "Hurmatli foydalanuvchi ism familiyangizni quyidagicha  kiriting:\n\n``` fio*familiya ͏ism ```\nMisol:\n``` fio*Baxtiyorjonova Shukronaxon ```";
     }
 
     public String subjectNotFound() {
@@ -61,9 +61,16 @@ public class TextService {
 
     }
 
-    public String getResult(String securityKey, String name, int size, int correctCount, int incorrectCount, double accuracyPercentage, double ball, QuizType quizType) {
-        return "Natija\uD83D\uDC47 \n\n\uD83D\uDCDA Fan: %s\n\uD83D\uDD11 Test kodi: %s\n♾️Test turi: %s \n✏️ Jami savollar soni: %d ta \n✅ To'g'ri javoblar soni: %d ta \n❓Noto`g`ri javoblaringiz: %d \n\uD83D\uDD1DBall: %s \n\uD83D\uDD23Foiz : %s"
+    public String getResult(String securityKey, String name, int size, int correctCount, int incorrectCount, double accuracyPercentage, double ball, List<String> incorrectAnswers, QuizType quizType) {
+        String res = "Natija\uD83D\uDC47 \n\n\uD83D\uDCDA Fan: %s\n\uD83D\uDD11 Test kodi: %s\n♾️Test turi: %s \n✏️ Jami savollar soni: %d ta \n✅ To'g'ri javoblar soni: %d ta \n❓Noto`g`ri javoblaringiz: %d \n\uD83D\uDD1DBall: %s \n\uD83D\uDD23Foiz : %s\n\n❌Notog'ri javoblar: \n"
                 .formatted(name, securityKey, quizType.getDisplayName(), size, correctCount, incorrectCount, String.format("%.1f", ball), String.format("%.2f", accuracyPercentage) + "%");
+
+        if (incorrectAnswers.size() > 0) {
+            for (int i = 0; i < incorrectAnswers.size(); i++) {
+                res += incorrectAnswers.get(i);
+            }
+        }
+        return res + "Yo'q";
     }
 
     public String getStatistic(AllStatisticEntity entity) {
@@ -79,7 +86,7 @@ public class TextService {
     }
 
     public String getCreateTest(String targetText) {
-        return "\uD83D\uDC47\uD83D\uDC47\uD83D\uDC47 Test yaratish uchun yo'riqnoma. \n\ntest*Fan nomi*to'g'ri javoblar \n\nMisol: \ntest*Informatika*abbccdd \ntest*Ona tili*abcdabcd %s".formatted(targetText);
+        return "\uD83D\uDC47\uD83D\uDC47\uD83D\uDC47 Test yaratish uchun yo'riqnoma. \n\ntest*Fan nomi*to'g'ri javoblar \n\nMisol: \ntest*Informatika*abbccdd \ntest*Ona tili*1a2b3c4d5a6b7c8d %s".formatted(targetText);
     }
 
     public String errorCreateTest(String targetText) {
@@ -96,7 +103,8 @@ public class TextService {
         return "<b>\uD83D\uDC4B Assalomu Alaykum aziz foydalanuvchi! \n\nBotimizga xush kelibsiz! Agarda botimizdan foydalanishga qiynalsangiz quyidagilar bilan tanishib chiqing! \n\n✅ Botimizga maxsus link bilan /start bosing, so'ngra test javoblarini yuboring. \n\nAgarda kanalga obuna bo'lish so‘ralsa, pasdagi kanallarga obuna bo'lib «✅ Kanalga Obuna Bo'ldim» tugmasiga bosing.\n\n \uD83E\uDDD1\u200D\uD83D\uDCBB Bot Dasturchisi: <a href=\"https://t.me/XDasturchi\">𝑿 𝑫 𝒂 𝒔 𝒕 𝒖 𝒓 𝒄 𝒉 𝒊</a> </b>";
     }
 
-    public String getTestInfo(SubjectEntity savedSubject, int length, String creatorUser, QuizType quizType, List<AnswerEntity> allAnswerBySubjectId) {
+    public String getTestInfo(SubjectEntity savedSubject, int length, String creatorUser, QuizType
+            quizType, List<AnswerEntity> allAnswerBySubjectId) {
         String testCode = savedSubject.getSecurity_key();
         String subjectName = savedSubject.getName();
 

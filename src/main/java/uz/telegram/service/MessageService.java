@@ -64,15 +64,19 @@ public class MessageService {
         }
     }
 
-    public void sendMessageToAdmin(UserEntity user, List<AdminEntity> admins, String text) {
+    public void sendMessageToAdmin(UserEntity user, List<AdminEntity> admins, String text, String userAnswer) {
         String user_info = "Id: %s \nIsm familiya: %s \n\n".formatted(user.getId(), user.getUsername());
+        String adminresponse = user_info + text + "\n\n\uD83D\uDCDDBarcha javoblar: \n";
+        for (int i = 0; i < userAnswer.length(); i++) {
+            adminresponse += i + 1 + ". " + userAnswer.charAt(i) + "  ";
+        }
 
         try {
             for (AdminEntity admin : admins) {
                 SendMessage sendMessage = new SendMessage();
 
                 sendMessage.setChatId(admin.getId());
-                sendMessage.setText(user_info + text);
+                sendMessage.setText(adminresponse);
                 sendMessage.setParseMode("HTML");
 
                 BaseTelegramBot.getSender().execute(sendMessage);
