@@ -69,6 +69,7 @@ public class TextService {
             for (int i = 0; i < incorrectAnswers.size(); i++) {
                 res += incorrectAnswers.get(i);
             }
+            return res;
         }
         return res + "Yo'q";
     }

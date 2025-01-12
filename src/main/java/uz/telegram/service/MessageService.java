@@ -68,7 +68,7 @@ public class MessageService {
         String user_info = "Id: %s \nIsm familiya: %s \n\n".formatted(user.getId(), user.getUsername());
         String adminresponse = user_info + text + "\n\n\uD83D\uDCDDBarcha javoblar: \n";
         for (int i = 0; i < userAnswer.length(); i++) {
-            adminresponse += i + 1 + ". " + userAnswer.charAt(i) + "  ";
+            adminresponse += i + 1 + ". " + userAnswer.charAt(i) + "   ";
         }
 
         try {

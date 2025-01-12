@@ -88,8 +88,7 @@ public class MessageHandler {
                 SubjectEntity subjectEntity = optionalSubject.get();
                 List<AnswerEntity> allAnswerBySubjectId = AppUtils.getAllAnswerBySubjectId(subjectEntity.getId());
                 String userAnswer = getText().replaceAll("[0-9]", "");
-                System.out.println("gettext: " + getText());
-                System.out.println("useranswer: " + userAnswer);
+
                 if (userAnswer.length() == allAnswerBySubjectId.size()) {
                     Map<String, Object> result = check(userAnswer, allAnswerBySubjectId);
                     int correctCount = (int) result.get("correctCount");
@@ -100,7 +99,7 @@ public class MessageHandler {
 
                     String textServiceResult = textService.getResult(security_key, subjectEntity.getName(), allAnswerBySubjectId.size(), correctCount, incorrectCount, accuracyPercentage, totalScore, incorrectAnswers, subjectEntity.getQuiz_type());
                     messageService.sendMessage(getChatId(), textServiceResult, KeyboardService.getMainKeyboard(user));
-                    messageService.sendMessageToAdmin(user, PropertiesUtils.getAdmins(), textServiceResult, answers);
+                    messageService.sendMessageToAdmin(user, PropertiesUtils.getAdmins(), textServiceResult, userAnswer);
                     Message message = messageService.sendMessage(getChatId(), "<b>⏬Sertifikat yuklanmoqda...</b>", true);
 
                     if (subjectEntity.getQuiz_type().equals(QuizType.ATTESTATSIYA)) {
@@ -171,7 +170,7 @@ public class MessageHandler {
         }
 
         if (PropertiesUtils.getAdmins().stream().anyMatch(adminEntity -> adminEntity.getId().
-                        equals(user.getId()))) {
+                equals(user.getId()))) {
             if (user.getStep() == null)
                 switch (getText()) {
                     case Constants.BotCommand.BUTTON_STATISTIC -> {
