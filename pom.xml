@@ -16,7 +16,7 @@
 
 
     <build>
-        <finalName>TestBot</finalName>
+        <finalName>TestCheckerBot</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

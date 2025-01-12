@@ -87,10 +87,11 @@ public class MessageHandler {
             if (optionalSubject.isPresent()) {
                 SubjectEntity subjectEntity = optionalSubject.get();
                 List<AnswerEntity> allAnswerBySubjectId = AppUtils.getAllAnswerBySubjectId(subjectEntity.getId());
-                String answers = getText().replaceAll("[0-9]", "");
-
-                if (answers.length() == allAnswerBySubjectId.size()) {
-                    Map<String, Object> result = check(answers, allAnswerBySubjectId);
+                String userAnswer = getText().replaceAll("[0-9]", "");
+                System.out.println("gettext: " + getText());
+                System.out.println("useranswer: " + userAnswer);
+                if (userAnswer.length() == allAnswerBySubjectId.size()) {
+                    Map<String, Object> result = check(userAnswer, allAnswerBySubjectId);
                     int correctCount = (int) result.get("correctCount");
                     int incorrectCount = (int) result.get("incorrectCount");
                     double totalScore = (double) result.get("totalScore");
@@ -110,17 +111,15 @@ public class MessageHandler {
                         } else if (totalScore >= 70 && totalScore < 80) {
                             sertificatAttestatsiyaEntity.setSort("Toifa 1");
                         } else if (totalScore >= 80) {
-                            sertificatAttestatsiyaEntity.setSort("Olit toifa");
+                            sertificatAttestatsiyaEntity.setSort("Oliy toifa");
                         } else if (totalScore < 60) {
                             sertificatAttestatsiyaEntity.setSort("-");
                         }
-
-                        if (totalScore >= 86) {
-                            sertificatAttestatsiyaEntity.setFor70Score((float) totalScore);
-                        } else {
-                            sertificatAttestatsiyaEntity.setFor70Score(0F);
-                        }
                         sertificatAttestatsiyaEntity.setOverallScore(Float.valueOf(String.format("%.1f", totalScore)));
+                        if (totalScore >= 86) {
+                            sertificatAttestatsiyaEntity.setFor70Score(Float.valueOf(String.format("%.1f", (totalScore))));
+                        }
+                        sertificatAttestatsiyaEntity.setFor70Score(0F);
 
                         String base64Certificate = certificateService.getAttestatsiyaCertificate(sertificatAttestatsiyaEntity);
 
@@ -134,7 +133,7 @@ public class MessageHandler {
                         sendPhotoFromJson(base64Certificate);
                     } else if (subjectEntity.getQuiz_type().equals(QuizType.MILLIY_SERTIFIKAT)) {
                         SertificatTestCheckerMilliyDto testCheckerMilliyDto = new SertificatTestCheckerMilliyDto();
-                        Map<String, Object> calculate = calculate(answers, allAnswerBySubjectId);
+                        Map<String, Object> calculate = calculate(userAnswer, allAnswerBySubjectId);
                         testCheckerMilliyDto.setPart_1((float) calculate.get("1-12"));
                         testCheckerMilliyDto.setPart_2((float) calculate.get("13-17"));
                         testCheckerMilliyDto.setPart_3((float) calculate.get("18-22"));
@@ -158,7 +157,7 @@ public class MessageHandler {
                     userRepository.update(user);
                     return;
                 } else {
-                    messageService.sendMessage(getChatId(), textService.errorSendAnswerCount(security_key, answers.length(), allAnswerBySubjectId.size()), KeyboardService.getMainKeyboard(user));
+                    messageService.sendMessage(getChatId(), textService.errorSendAnswerCount(security_key, userAnswer.length(), allAnswerBySubjectId.size()), KeyboardService.getMainKeyboard(user));
                     return;
                 }
 
@@ -171,7 +170,8 @@ public class MessageHandler {
 
         }
 
-        if (PropertiesUtils.getAdmins().stream().anyMatch(adminEntity -> adminEntity.getId().equals(user.getId()))) {
+        if (PropertiesUtils.getAdmins().stream().anyMatch(adminEntity -> adminEntity.getId().
+                        equals(user.getId()))) {
             if (user.getStep() == null)
                 switch (getText()) {
                     case Constants.BotCommand.BUTTON_STATISTIC -> {

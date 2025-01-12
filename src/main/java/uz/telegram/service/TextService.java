@@ -86,7 +86,7 @@ public class TextService {
     }
 
     public String getCreateTest(String targetText) {
-        return "\uD83D\uDC47\uD83D\uDC47\uD83D\uDC47 Test yaratish uchun yo'riqnoma. \n\ntest*Fan nomi*to'g'ri javoblar \n\nMisol: \ntest*Informatika*abbccdd \ntest*Ona tili*1a2b3c4d5a6b7c8d %s".formatted(targetText);
+        return "\uD83D\uDC47\uD83D\uDC47\uD83D\uDC47 Test yaratish uchun yo'riqnoma. \n\ntest*Fan nomi*to'g'ri javoblar \n\nMisol: \ntest*Informatika*1a2b3d4c \ntest*Ona tili*1a2b3d4c %s".formatted(targetText);
     }
 
     public String errorCreateTest(String targetText) {
