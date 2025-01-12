@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="Subject">
+
+    <!--    SELECT -->
+    <select id="selectSubject" parameterType="map" resultType="uz.db.entity.SubjectEntity">
+        SELECT *
+        FROM subject
+        WHERE 1 = 1
+        <if test="security_key != null">
+            AND security_key = #{security_key}
+        </if>
+    </select>
+
+
+    <!--   ACTIONS -->
+    <insert id="insertSubject" parameterType="map">
+        INSERT INTO subject (id,
+                             name,
+                             security_key,
+                             quiz_type,
+                             created_user_id)
+        VALUES (#{id},
+                #{name},
+                #{security_key},
+                #{quiz_type},
+                #{created_user_id})
+    </insert>
+
+    <update id="updateSubject" parameterType="map">
+        UPDATE subject
+        SET name           = #{name},
+            update_date   = CURRENT_TIMESTAMP(),
+        where id = #{id}
+    </update>
+
+    <delete id="deleteSubject" parameterType="map">
+        DELETE
+        FROM subject
+        where id = #{id}
+    </delete>
+
+</mapper>
