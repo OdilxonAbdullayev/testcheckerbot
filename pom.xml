@@ -16,7 +16,7 @@
 
 
     <build>
-        <finalName>VideoDownloader</finalName>
+        <finalName>TestCheckerBot</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
