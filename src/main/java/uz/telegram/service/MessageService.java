@@ -1,8 +1,10 @@
 package uz.telegram.service;
 
+import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.objects.User;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRemove;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import uz.core.Constants;
 import uz.core.base.entity.DDLResponse;
 import uz.core.logger.LogManager;
@@ -22,6 +24,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMa
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import uz.telegram.core.BaseTelegramBot;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.InputStream;
 import java.net.URI;
@@ -29,6 +32,7 @@ import java.net.URL;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
 
@@ -124,6 +128,7 @@ public class MessageService {
             sendMessage.setText(text);
             sendMessage.setParseMode(Constants.ParseMode.HTML);
             sendMessage.setReplyMarkup(replyKeyboardMarkup);
+            sendMessage.disableWebPagePreview();
 
             BaseTelegramBot.getSender().execute(sendMessage);
         } catch (Exception e) {
@@ -290,6 +295,7 @@ public class MessageService {
         return null;
     }
 
+
     public Integer sendVideo(long chatId, String url) {
         String telegramApiUrl = "https://api.telegram.org/bot" + PropertiesUtils.getTelegramBotToken() + "/sendVideo?chat_id=" + chatId + "&video=" + url;
 
@@ -313,6 +319,17 @@ public class MessageService {
             _logger.error(e.getMessage());
         }
         return null;
+    }
+
+    public void sendPhoto(Long chatId, InputStream file) {
+        SendPhoto sendPhoto = new SendPhoto();
+        sendPhoto.setChatId(chatId);
+        sendPhoto.setPhoto(new InputFile(file, chatId + ".jpg"));
+        try {
+            BaseTelegramBot.getSender().execute(sendPhoto);
+        } catch (Exception e) {
+            _logger.error(e.getMessage());
+        }
     }
 
     public void deleteMessage(Long chatid, Integer messageId) {

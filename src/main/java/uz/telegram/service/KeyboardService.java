@@ -2,10 +2,7 @@ package uz.telegram.service;
 
 import uz.core.Constants;
 import uz.core.utils.PropertiesUtils;
-import uz.db.entity.AdminEntity;
-import uz.db.entity.AnswerEntity;
-import uz.db.entity.ChannelEntity;
-import uz.db.entity.UserEntity;
+import uz.db.entity.*;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
@@ -67,17 +64,15 @@ public class KeyboardService {
         KeyboardButton adminButton = new KeyboardButton(Constants.BotCommand.BUTTON_ADMIN);
         KeyboardButton sendMessageButton = new KeyboardButton(Constants.BotCommand.BUTTON_SEND_MESSAGE);
         KeyboardButton information = new KeyboardButton(Constants.BotCommand.INFO);
+        KeyboardButton mySubjects = new KeyboardButton(Constants.BotCommand.MY_TESTS);
         KeyboardButton createTest = new KeyboardButton(Constants.BotCommand.CREATE_TEST);
-        KeyboardRow keyboardButtons = new KeyboardRow();
-
-        rows.add(keyboardButtons);
 
         if (PropertiesUtils.getAdmins().stream().anyMatch(adminEntity -> adminEntity.getId().equals(user.getId()))) {
-            keyboardButtons.add(createTest);
+            rows.add(new KeyboardRow(List.of(createTest, mySubjects)));
             rows.add(new KeyboardRow(List.of(adminButton, statisticButton)));
             rows.add(new KeyboardRow(List.of(channelButton, sendMessageButton)));
-            rows.add(new KeyboardRow(List.of(information)));
         }
+        rows.add(new KeyboardRow(List.of(information)));
 
         reply.setKeyboard(rows);
         reply.setResizeKeyboard(true);
@@ -174,6 +169,109 @@ public class KeyboardService {
         backButton.setText(Constants.BotCommand.BACK_BUTTON_TEXT);
         backButton.setCallbackData(Constants.BotCommand.CALL_MAIN_MENU);
 
+        buttons.add(List.of(backButton));
+
+        inlineKeyboardMarkup.setKeyboard(buttons);
+
+        return inlineKeyboardMarkup;
+    }
+
+    public static InlineKeyboardMarkup getTests(List<SubjectEntity> subjectEntitiesList) {
+        InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
+        List<List<InlineKeyboardButton>> buttons = new ArrayList<>();
+
+        List<InlineKeyboardButton> currentRow = new ArrayList<>();
+
+        for (int i = 0; i < subjectEntitiesList.size(); i++) {
+            SubjectEntity subject = subjectEntitiesList.get(i);
+            InlineKeyboardButton button = new InlineKeyboardButton();
+
+            button.setText(String.valueOf(subject.getName()));
+            button.setCallbackData(Constants.BotCommand.TESTS + subject.getSecurity_key());
+
+            currentRow.add(button);
+
+            if (currentRow.size() == 2 || i == subjectEntitiesList.size() - 1) {
+                buttons.add(new ArrayList<>(currentRow));
+                currentRow.clear();
+            }
+        }
+
+        InlineKeyboardButton backButton = new InlineKeyboardButton();
+        backButton.setText(Constants.BotCommand.BACK_BUTTON_TEXT);
+        backButton.setCallbackData(Constants.BotCommand.CALL_MAIN_MENU);
+        buttons.add(List.of(backButton));
+
+        inlineKeyboardMarkup.setKeyboard(buttons);
+
+        return inlineKeyboardMarkup;
+    }
+
+
+    public static InlineKeyboardMarkup quizDeleteButton(String security_key) {
+        InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
+        List<List<InlineKeyboardButton>> buttons = new ArrayList<>();
+
+        InlineKeyboardButton deleteButton = new InlineKeyboardButton();
+        deleteButton.setText(Constants.BotCommand.BUTTON_DELETE);
+        deleteButton.setCallbackData(Constants.BotCommand.DELETE_TEST + security_key);
+
+        InlineKeyboardButton backButton = new InlineKeyboardButton();
+        backButton.setText(Constants.BotCommand.BACK_BUTTON_TEXT);
+        backButton.setCallbackData(Constants.BotCommand.CALL_MAIN_MENU);
+        buttons.add(List.of(deleteButton, backButton));
+
+        inlineKeyboardMarkup.setKeyboard(buttons);
+
+        return inlineKeyboardMarkup;
+    }
+
+    public static InlineKeyboardMarkup getFilter() {
+        InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
+        List<List<InlineKeyboardButton>> buttons = new ArrayList<>();
+
+        InlineKeyboardButton allTest = new InlineKeyboardButton();
+        allTest.setText(Constants.BotCommand.ALL_TEST);
+        allTest.setCallbackData(Constants.BotCommand.SHOW_ALL_TEST);
+
+        InlineKeyboardButton filteredTest = new InlineKeyboardButton();
+        filteredTest.setText(Constants.BotCommand.FILTER_TEST);
+        filteredTest.setCallbackData(Constants.BotCommand.SHOW_FILTER_TEST);
+
+        buttons.add(List.of(allTest, filteredTest));
+
+        InlineKeyboardButton backButton = new InlineKeyboardButton();
+        backButton.setText(Constants.BotCommand.BACK_BUTTON_TEXT);
+        backButton.setCallbackData(Constants.BotCommand.CALL_MAIN_MENU);
+        buttons.add(List.of(backButton));
+
+        inlineKeyboardMarkup.setKeyboard(buttons);
+
+        return inlineKeyboardMarkup;
+    }
+
+    public static InlineKeyboardMarkup getFilterType() {
+        InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
+        List<List<InlineKeyboardButton>> buttons = new ArrayList<>();
+
+        InlineKeyboardButton bySubjectName = new InlineKeyboardButton();
+        bySubjectName.setText(Constants.BotCommand.BY_SUBJECT_NAME);
+        bySubjectName.setCallbackData(Constants.BotCommand.SHOW_BY_SUBJECT_NAME);
+        buttons.add(List.of(bySubjectName));
+
+        InlineKeyboardButton attestatsiya = new InlineKeyboardButton();
+        attestatsiya.setText(Constants.BotCommand.BY_ATTESTATSIYA);
+        attestatsiya.setCallbackData(Constants.BotCommand.BY_ATTESTATSIYA);
+
+        InlineKeyboardButton milliy_sertifikat = new InlineKeyboardButton();
+        milliy_sertifikat.setText(Constants.BotCommand.BY_MILLIY);
+        milliy_sertifikat.setCallbackData(Constants.BotCommand.BY_MILLIY);
+
+        buttons.add(List.of(attestatsiya, milliy_sertifikat));
+
+        InlineKeyboardButton backButton = new InlineKeyboardButton();
+        backButton.setText(Constants.BotCommand.BACK_BUTTON_TEXT);
+        backButton.setCallbackData(Constants.BotCommand.CALL_MAIN_MENU);
         buttons.add(List.of(backButton));
 
         inlineKeyboardMarkup.setKeyboard(buttons);

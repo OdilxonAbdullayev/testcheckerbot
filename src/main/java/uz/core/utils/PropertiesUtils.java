@@ -23,6 +23,8 @@ public class PropertiesUtils {
 
     @Getter
     private static String adminUsername;
+    @Getter
+    private static String apiBaseUrl;
 
 
 
@@ -36,6 +38,7 @@ public class PropertiesUtils {
             telegramBotName = properties.getProperty("telegram.bot.name");
             telegramBaseUrl = properties.getProperty("telegram.base.url");
             adminUsername = properties.getProperty("admin.username");
+            apiBaseUrl = properties.getProperty("api.base.url");
         } catch (Exception e) {
             _logger.error(e.getMessage());
         }

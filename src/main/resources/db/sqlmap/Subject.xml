@@ -13,7 +13,6 @@
     </select>
 
 
-
     <!--   ACTIONS -->
     <insert id="insertSubject" parameterType="map">
         INSERT INTO subject (id,

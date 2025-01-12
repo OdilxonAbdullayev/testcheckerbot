@@ -1,5 +1,10 @@
 package uz.telegram.handler;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.checkerframework.checker.units.qual.A;
+import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
+import org.telegram.telegrambots.meta.api.objects.InputFile;
 import uz.core.Constants;
 import uz.core.base.entity.DDLResponse;
 import uz.core.logger.LogManager;
@@ -10,11 +15,16 @@ import uz.db.enums.QuizType;
 import uz.db.respository.*;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
+import uz.db.service.CertificateService;
 import uz.telegram.core.BaseTelegramBot;
 import uz.telegram.service.KeyboardService;
 import uz.telegram.service.MessageService;
 import uz.telegram.service.TextService;
 
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -31,6 +41,7 @@ public class MessageHandler {
     private static final AdminRepository adminRepository = AdminRepository.getInstance();
     private static final AnswerRepository answerRepository = AnswerRepository.getInstance();
     private static final SubjectRepository subjectRepository = SubjectRepository.getInstance();
+    private static final CertificateService certificateService = CertificateService.getInstance();
     private ResourceBundle rb;
     private TextService textService;
 
@@ -53,6 +64,11 @@ public class MessageHandler {
             user.setStep(null);
             user.setCurrent_security_key(null);
             userRepository.update(user);
+            return;
+        }
+
+        if (getText().equals(Constants.BotCommand.INFO)) {
+            messageService.sendMessage(getChatId(), textService.getInfoButton());
             return;
         }
 
@@ -81,6 +97,46 @@ public class MessageHandler {
                     String textServiceResult = textService.getResult(security_key, subjectEntity.getName(), allAnswerBySubjectId.size(), correctCount, incorrectCount, accuracyPercentage, totalScore, subjectEntity.getQuiz_type());
                     messageService.sendMessage(getChatId(), textServiceResult, KeyboardService.getMainKeyboard(user));
                     messageService.sendMessageToAdmin(user, PropertiesUtils.getAdmins(), textServiceResult);
+                    Message message = messageService.sendMessage(getChatId(), "<b>⏬Sertifikat yuklanmoqda...</b>", true);
+                    if (subjectEntity.getQuiz_type().equals(QuizType.ATTESTATSIYA)) {
+                        SertificatAttestatsiyaEntity sertificatAttestatsiyaEntity = new SertificatAttestatsiyaEntity();
+                        sertificatAttestatsiyaEntity.setFio(user.getUsername());
+                        sertificatAttestatsiyaEntity.setSort("OLIY");
+                        sertificatAttestatsiyaEntity.setOverallScore(Float.valueOf(String.format("%.1f", totalScore)));
+                        sertificatAttestatsiyaEntity.setFor70Score(Float.valueOf(String.format("%.1f", (totalScore / 2))));
+
+                        String base64Certificate = certificateService.getAttestatsiyaCertificate(sertificatAttestatsiyaEntity);
+
+                        if (base64Certificate.equals("")) {
+                            messageService.sendMessage(getChatId(), "Xatolik yuz berdi❗\uFE0F");
+                            user.setCurrent_security_key(null);
+                            userRepository.update(user);
+                            return;
+                        }
+                        deleteMessage(user.getId(), message);
+                        sendPhotoFromJson(base64Certificate);
+                    } else if (subjectEntity.getQuiz_type().equals(QuizType.MILLIY_SERTIFIKAT)) {
+                        SertificatTestCheckerMilliyDto testCheckerMilliyDto = new SertificatTestCheckerMilliyDto();
+                        Map<String, Object> calculate = calculate(getText(), allAnswerBySubjectId);
+                        testCheckerMilliyDto.setPart_1((float) calculate.get("1-12"));
+                        testCheckerMilliyDto.setPart_2((float) calculate.get("13-17"));
+                        testCheckerMilliyDto.setPart_3((float) calculate.get("18-22"));
+                        testCheckerMilliyDto.setPart_4((float) calculate.get("33-35"));
+                        testCheckerMilliyDto.setFio(user.getUsername());
+                        testCheckerMilliyDto.setOverallScore(testCheckerMilliyDto.getPart_1() + testCheckerMilliyDto.getPart_2() + testCheckerMilliyDto.getPart_3() + testCheckerMilliyDto.getPart_4());
+
+                        String base64Certificate = certificateService.getMilliyCertificate(testCheckerMilliyDto);
+                        if (base64Certificate.equals("")) {
+                            messageService.sendMessage(getChatId(), "Xatolik yuz berdi❗\uFE0F");
+                            user.setCurrent_security_key(null);
+                            userRepository.update(user);
+                            return;
+                        }
+
+                        deleteMessage(user.getId(), message);
+                        sendPhotoFromJson(base64Certificate);
+                    }
+
                     user.setCurrent_security_key(null);
                     userRepository.update(user);
                     return;
@@ -98,8 +154,13 @@ public class MessageHandler {
 
         }
 
-        if (PropertiesUtils.getAdmins().stream().
-                anyMatch(adminEntity -> adminEntity.getId().equals(user.getId()))) {
+        if (PropertiesUtils.getAdmins().
+
+                stream().
+
+                anyMatch(adminEntity -> adminEntity.getId().
+
+                        equals(user.getId()))) {
             if (user.getStep() == null)
                 switch (getText()) {
                     case Constants.BotCommand.BUTTON_STATISTIC -> {
@@ -138,6 +199,11 @@ public class MessageHandler {
                     }
                     case Constants.BotCommand.INFO -> {
                         messageService.sendMessage(getChatId(), textService.getInfoButton());
+                        return;
+                    }
+
+                    case Constants.BotCommand.MY_TESTS -> {
+                        messageService.sendMessage(getChatId(), textService.getChooseButton("qidiruv turlaridan"), KeyboardService.getFilter());
                         return;
                     }
 
@@ -285,6 +351,20 @@ public class MessageHandler {
                         return;
                     }
                 }
+                if (user.getStep().equals(SHOW_BY_SUBJECT_NAME)) {
+                    deleteMessage();
+                    List<SubjectEntity> subjectEntityList = AppUtils.getSubjectNameList(getText());
+                    if (subjectEntityList != null && subjectEntityList.size() > 0) {
+                        messageService.sendMessage(getChatId(), textService.getChooseButton("testlardan"), KeyboardService.getTests(subjectEntityList));
+                        user.setStep(null);
+                        userRepository.update(user);
+                        return;
+                    }
+                    messageService.sendMessage(getChatId(), "Bu nomli birorta ham test topilmadi❗️");
+                    user.setStep(null);
+                    userRepository.update(user);
+                    return;
+                }
 
 
             }
@@ -330,6 +410,49 @@ public class MessageHandler {
             messageService.sendMessage(getChatId(), "<b>\uD83D\uDC4BAssalomu alaykum\n\nBotimizga xush kelibsiz botimz faqat maxsus link orqali kirganda ishlaydi iltimos maxsus link orqali kiring va testlaringizni javobini yuboring</b>", KeyboardService.getMainKeyboard(user));
         }
 
+    }
+
+    private Map<String, Object> calculate(String answer, List<AnswerEntity> allAnswerBySubjectId) {
+        float totalscore1To12 = 0;
+        float totalscore13To17 = 0;
+        float totalscore18To22 = 0;
+        float totalscore33To35 = 0;
+
+        for (int i = 0; i < allAnswerBySubjectId.size(); i++) {
+            char userChar = answer.charAt(i);
+            String correctAnswer = allAnswerBySubjectId.get(i).getAnswer();
+            float score = allAnswerBySubjectId.get(i).getScore();
+
+            if (i > 0 && i <= 12) {
+                if (String.valueOf(userChar).equals(correctAnswer)) {
+                    totalscore1To12 += score;
+                }
+            }
+            if (i > 12 && i <= 17) {
+                if (String.valueOf(userChar).equals(correctAnswer)) {
+                    totalscore13To17 += score;
+                }
+            }
+            if (i > 17 && i <= 22) {
+                if (String.valueOf(userChar).equals(correctAnswer)) {
+                    totalscore18To22 += score;
+                }
+            }
+            if (i > 33 && i <= 35) {
+                if (String.valueOf(userChar).equals(correctAnswer)) {
+                    totalscore33To35 += score;
+                }
+            }
+
+        }
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("1-12", totalscore1To12);
+        result.put("13-17", totalscore13To17);
+        result.put("18-22", totalscore18To22);
+        result.put("33-35", totalscore33To35);
+
+        return result;
     }
 
     private void createAnswers(Long createdUserId, Long subjectId, String answers, QuizType quizType) {
@@ -407,12 +530,40 @@ public class MessageHandler {
         return result;
     }
 
+    public void sendPhotoFromJson(String jsonResponse) {
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            JsonNode rootNode = objectMapper.readTree(jsonResponse);
+
+            String base64Image = rootNode.path("sertificat").asText();
+            byte[] decodedBytes = Base64.getDecoder().decode(base64Image);
+            InputStream inputStream = new ByteArrayInputStream(decodedBytes);
+
+            messageService.sendPhoto(getChatId(), inputStream);
+        } catch (Exception e) {
+            _logger.error(e.getMessage());
+        }
+    }
+
 
     public void deleteMessage() {
         try {
             DeleteMessage deleteMessage = new DeleteMessage();
 
             deleteMessage.setChatId(getChatId());
+            deleteMessage.setMessageId(message.getMessageId());
+
+            BaseTelegramBot.getSender().execute(deleteMessage);
+        } catch (Exception e) {
+            _logger.error(e.getMessage());
+        }
+    }
+
+    public void deleteMessage(Long chatId, Message message) {
+        try {
+            DeleteMessage deleteMessage = new DeleteMessage();
+
+            deleteMessage.setChatId(chatId);
             deleteMessage.setMessageId(message.getMessageId());
 
             BaseTelegramBot.getSender().execute(deleteMessage);

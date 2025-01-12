@@ -5,6 +5,7 @@ import uz.core.Constants;
 import uz.core.base.entity.DDLResponse;
 import uz.core.logger.LogManager;
 import uz.db.entity.*;
+import uz.db.enums.QuizType;
 import uz.db.respository.ChannelRepository;
 import uz.db.entity.SenderEntity;
 import org.apache.ibatis.io.Resources;
@@ -103,12 +104,13 @@ public class AppUtils {
             return Collections.emptyList();
         }
     }
-    public static SubjectEntity getSubjectById(Long subject_id) {
+
+    public static List<SubjectEntity> getSubjectByCreatedAdminId(Long created_user_id) {
         try (SqlSession session = getSqlSession().openSession()) {
-            return session.selectOne("selectSubjectById", subject_id);
+            return session.selectList("selectSubjectCreatedByAdminId", created_user_id);
         } catch (Exception e) {
             _logger.error(e.getMessage());
-            return (SubjectEntity) Collections.emptyList();
+            return Collections.emptyList();
         }
     }
 
@@ -158,4 +160,32 @@ public class AppUtils {
 
         return map;
     }
+
+    public static List<SubjectEntity> getAttestatsiyaList() {
+        try (SqlSession session = getSqlSession().openSession()) {
+            return session.selectList("selectAttestatsiya", QuizType.ATTESTATSIYA);
+        } catch (Exception e) {
+            _logger.error(e.getMessage());
+            return null;
+        }
+    }
+
+    public static List<SubjectEntity> getMilliySertifikatList() {
+        try (SqlSession session = getSqlSession().openSession()) {
+            return session.selectList("selectMilliy", QuizType.MILLIY_SERTIFIKAT);
+        } catch (Exception e) {
+            _logger.error(e.getMessage());
+            return null;
+        }
+    }
+
+    public static List<SubjectEntity> getSubjectNameList(String name) {
+        try (SqlSession session = getSqlSession().openSession()) {
+            return session.selectList("selectSubjectsByName", name);
+        } catch (Exception e) {
+            _logger.error(e.getMessage());
+            return null;
+        }
+    }
+
 }

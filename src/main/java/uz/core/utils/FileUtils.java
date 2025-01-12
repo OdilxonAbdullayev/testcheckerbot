@@ -5,15 +5,14 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
+import java.io.*;
+import java.util.Base64;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class FileUtils {
     @Getter
     private static final FileUtils instance = new FileUtils();
-    private  final LogManager _logger = new LogManager(FileUtils.class);
+    private static final LogManager _logger = new LogManager(FileUtils.class);
 
     public InputStream getProperties() {
         try {
@@ -27,5 +26,13 @@ public class FileUtils {
         return instance.getProperties();
     }
 
+    public static void saveBase64ToFile(String base64String, String filePath) {
+        byte[] decodedBytes = Base64.getDecoder().decode(base64String);
+        try (OutputStream os = new FileOutputStream(filePath)) {
+            os.write(decodedBytes);
+        } catch (Exception e) {
+            _logger.error(e.getMessage());
+        }
+    }
 
 }

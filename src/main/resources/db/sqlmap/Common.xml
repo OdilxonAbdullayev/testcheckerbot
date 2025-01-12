@@ -8,12 +8,40 @@
         (SELECT COUNT(*) FROM users WHERE status_id = 2) AS deleted_user_count
     </select>
 
+    <select id="selectAttestatsiya" parameterType="map" resultType="uz.db.entity.SubjectEntity">
+        select *
+        from subject
+        where quiz_type like '%ATTESTATSIYA%'
+    </select>
+
+    <select id="selectMilliy" parameterType="map" resultType="uz.db.entity.SubjectEntity">
+        select *
+        from subject
+        where quiz_type like '%MILLIY_SERTIFIKAT%'
+    </select>
+
+    <select id="selectSubjectsByName" parameterType="map" resultType="uz.db.entity.SubjectEntity">
+        select *
+        from subject
+        where name like concat('%', #{name}, '%')
+    </select>
+
+
     <select id="selectSubjectById" parameterType="map" resultType="uz.db.entity.SubjectEntity">
         SELECT *
         FROM subject
         WHERE 1 = 1
-        <if test="id != id">
+        <if test="id != null">
             AND id = #{id}
+        </if>
+    </select>
+
+    <select id="selectSubjectCreatedByAdminId" parameterType="map" resultType="uz.db.entity.SubjectEntity">
+        SELECT *
+        FROM subject
+        WHERE 1 = 1
+        <if test="created_user_id != null">
+            AND created_user_id = #{created_user_id}
         </if>
     </select>
 

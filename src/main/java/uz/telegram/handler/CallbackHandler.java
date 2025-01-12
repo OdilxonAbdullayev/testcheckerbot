@@ -5,6 +5,7 @@ import uz.core.logger.LogManager;
 import uz.core.utils.AppUtils;
 import uz.core.utils.PropertiesUtils;
 import uz.db.entity.*;
+import uz.db.enums.QuizType;
 import uz.db.respository.*;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
@@ -26,6 +27,8 @@ public class CallbackHandler {
     private static final UserRepository userRepository = UserRepository.getInstance();
     private static final ChannelRepository channelRepository = ChannelRepository.getInstance();
     private static final AdminRepository adminRepository = AdminRepository.getInstance();
+    private static final SubjectRepository subjectRepository = SubjectRepository.getInstance();
+    private static final AnswerRepository answerRepository = AnswerRepository.getInstance();
     private ResourceBundle rb;
     private TextService textService;
 
@@ -42,6 +45,7 @@ public class CallbackHandler {
             case Constants.BotCommand.CALL_CHANNEL_RESULT, Constants.BotCommand.CALL_MAIN_MENU -> {
                 deleteMessage();
                 user.setStep(null);
+                user.setCurrent_security_key(null);
                 userRepository.update(user);
                 messageService.sendMessage(getChatId(), textService.startMessage(), KeyboardService.getMainKeyboard(user));
                 return;
@@ -112,7 +116,95 @@ public class CallbackHandler {
                 userRepository.update(user);
                 messageService.sendMessage(getChatId(), textService.getChooseButton("Adminlardan"), KeyboardService.getAdmins(response.getData()));
                 return;
+            } else if (getData().contains(Constants.BotCommand.TESTS)) {
+                String security_key = String.valueOf(getData().split("=")[1]);
+                deleteMessage();
+                Optional<SubjectEntity> optionalSubject = subjectRepository.getOne(new HashMap<>() {{
+                    put("security_key", security_key);
+                }}).getData();
+
+                if (optionalSubject.isPresent()) {
+                    SubjectEntity subjectEntity = optionalSubject.get();
+                    List<AnswerEntity> allAnswerBySubjectId = AppUtils.getAllAnswerBySubjectId(subjectEntity.getId());
+                    messageService.sendMessage(getChatId(), textService.getTestInfo(subjectEntity, allAnswerBySubjectId.size(), user.getUsername(), subjectEntity.getQuiz_type(), allAnswerBySubjectId), KeyboardService.quizDeleteButton(subjectEntity.getSecurity_key()));
+                    user.setStep(null);
+                    userRepository.update(user);
+                    return;
+                } else {
+                    _logger.error("Not found this security_key!");
+                }
+                return;
+            } else if (getData().contains(Constants.BotCommand.DELETE_TEST)) {
+                String security_key = String.valueOf(getData().split("=")[1]);
+                deleteMessage();
+                Optional<SubjectEntity> optionalSubject = subjectRepository.getOne(new HashMap<>() {{
+                    put("security_key", security_key);
+                }}).getData();
+
+                if (optionalSubject.isPresent()) {
+                    SubjectEntity subjectEntity = optionalSubject.get();
+                    List<AnswerEntity> allAnswerBySubjectId = AppUtils.getAllAnswerBySubjectId(subjectEntity.getId());
+                    for (int i = 0; i < allAnswerBySubjectId.size(); i++) {
+                        answerRepository.delete(allAnswerBySubjectId.get(i).getId());
+                    }
+                    subjectRepository.delete(subjectEntity.getId());
+                    user.setStep(null);
+                    userRepository.update(user);
+                    messageService.sendMessage(getChatId(), textService.startMessage(), KeyboardService.getMainKeyboard(user));
+                    return;
+                } else {
+                    _logger.error("Not found this subject by security_key!");
+                }
+            } else if (getData().contains(Constants.BotCommand.SHOW_ALL_TEST)) {
+                deleteMessage();
+                DDLResponse<List<SubjectEntity>> response = subjectRepository.getList(Map.of());
+                if (!response.getStatus()) {
+                    messageService.sendError(getChatId(), response);
+                    return;
+                }
+                for (int i = 0; i < response.getData().size(); i++) {
+                    messageService.sendMessage(getChatId(), textService.getChooseButton("testlardan"), KeyboardService.getTests(response.getData()));
+                    return;
+                }
+                return;
+            } else if (getData().contains(Constants.BotCommand.SHOW_FILTER_TEST)) {
+                deleteMessage();
+                messageService.sendMessage(getChatId(), textService.getFilterType(), KeyboardService.getFilterType());
+                return;
+            } else if (getData().contains(Constants.BotCommand.SHOW_BY_SUBJECT_NAME)) {
+                deleteMessage();
+                user.setStep(Constants.BotCommand.SHOW_BY_SUBJECT_NAME);
+                userRepository.update(user);
+                messageService.sendMessage(getChatId(), "Yaxshi, endi fan nomini yuboring!", KeyboardService.backButton(Constants.BotCommand.CALL_MAIN_MENU));
+                return;
+            } else if (getData().contains(Constants.BotCommand.BY_ATTESTATSIYA)) {
+                deleteMessage();
+                List<SubjectEntity> subjectEntitiesEqualQuizType = AppUtils.getAttestatsiyaList();
+                if (subjectEntitiesEqualQuizType != null && subjectEntitiesEqualQuizType.size() > 0) {
+                    messageService.sendMessage(getChatId(), textService.getChooseButton("testlardan"), KeyboardService.getTests(subjectEntitiesEqualQuizType));
+                    user.setStep(null);
+                    userRepository.update(user);
+                    return;
+                }
+                messageService.sendMessage(getChatId(), "Test turi Attestatsiya bo'lgan birorta ham test topilmadi❗️");
+                user.setStep(null);
+                userRepository.update(user);
+                return;
+            } else if (getData().contains(Constants.BotCommand.BY_MILLIY)) {
+                deleteMessage();
+                List<SubjectEntity> subjectEntitiesEqualQuizType = AppUtils.getMilliySertifikatList();
+                if (subjectEntitiesEqualQuizType != null && subjectEntitiesEqualQuizType.size() > 0) {
+                    messageService.sendMessage(getChatId(), textService.getChooseButton("testlardan"), KeyboardService.getTests(subjectEntitiesEqualQuizType));
+                    user.setStep(null);
+                    userRepository.update(user);
+                    return;
+                }
+                messageService.sendMessage(getChatId(), "Test turi Milliy sertifikat bo'lgan birorta ham test topilmadi❗️");
+                user.setStep(null);
+                userRepository.update(user);
+                return;
             }
+
         }
 
     }

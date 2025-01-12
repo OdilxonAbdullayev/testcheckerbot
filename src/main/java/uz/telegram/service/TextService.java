@@ -94,4 +94,49 @@ public class TextService {
         return "<b>\uD83D\uDC4B Assalomu Alaykum aziz foydalanuvchi! \n\nBotimizga xush kelibsiz! Agarda botimizdan foydalanishga qiynalsangiz quyidagilar bilan tanishib chiqing! \n\n✅ Botimizga maxsus link bilan /start bosing, so'ngra test javoblarini yuboring. \n\nAgarda kanalga obuna bo'lish so‘ralsa, pasdagi kanallarga obuna bo'lib «✅ Kanalga Obuna Bo'ldim» tugmasiga bosing.\n\n \uD83E\uDDD1\u200D\uD83D\uDCBB Bot Dasturchisi: <a href=\"https://t.me/XDasturchi\">𝑿 𝑫 𝒂 𝒔 𝒕 𝒖 𝒓 𝒄 𝒉 𝒊</a> </b>";
     }
 
+    public String getTestInfo(SubjectEntity savedSubject, int length, String creatorUser, QuizType quizType, List<AnswerEntity> allAnswerBySubjectId) {
+        String testCode = savedSubject.getSecurity_key();
+        String subjectName = savedSubject.getName();
+
+        StringBuilder answers = new StringBuilder();
+        for (int i = 0; i < allAnswerBySubjectId.size(); i++) {
+            AnswerEntity answer = allAnswerBySubjectId.get(i);
+            answers.append(i + 1).append(". ").append(answer.getAnswer()).append(" ")
+                    .append("(").append(answer.getScore()).append(")");
+            if (i < allAnswerBySubjectId.size() - 1) {
+                answers.append(",   ");
+            }
+        }
+
+        // Umumiy format
+        String baseInfo = String.format(
+                "<b>\u2139\ufe0fTest haqida ma'lumot.\n\n" +
+                "Test kodi: %s\n" +
+                "\ud83d\udd17Test link: https://t.me/translateentouzbot?start=%s\n" +
+                "Savollar soni: %d ta.\n" +
+                "Test turi: %s\n" +
+                "Test yaratuvchisi: %s\n" +
+                "Fan: %s\n",
+                testCode,
+                testCode,
+                length,
+                quizType.name(),
+                creatorUser,
+                subjectName
+        );
+
+        if (quizType == QuizType.ATTESTATSIYA || quizType == QuizType.MILLIY_SERTIFIKAT) {
+            String upperCase = answers.toString().toUpperCase();
+            return baseInfo + "Test javoblari: " + upperCase + "</b>";
+        } else {
+            return baseInfo;
+        }
+    }
+
+
+    public String getFilterType() {
+        return "<b>Saralash turini tanlang!</b>";
+    }
+
+
 }
