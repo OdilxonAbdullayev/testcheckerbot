@@ -66,6 +66,7 @@ create table subject
         primary key,
     name            varchar(255)                               not null,
     security_key    varchar(255)                               not null,
+    is_delete       int       default 0                        not null,
     quiz_type       enum ('MILLIY_SERTIFIKAT', 'ATTESTATSIYA') not null,
     created_date    timestamp default CURRENT_TIMESTAMP        null,
     update_date     timestamp default CURRENT_TIMESTAMP        null,
@@ -103,3 +104,20 @@ create table users
 
 create index status_id
     on users (status_id);
+
+create table user_answers
+(
+    id                     bigint primary key auto_increment,
+    user_id                bigint not null,
+    subject_id             bigint not null,
+    subject_name           varchar(255),
+    all_answer_count       int    not null,
+    correct_answer_count   int,
+    incorrect_answer_count int,
+    ball                   float,
+    percentage             float,
+    incorrect_answers_list varchar(1000),
+    allAnswersList         varchar(1000),
+    foreign key (user_id) references users (id),
+    foreign key (subject_id) references subject (id)
+)

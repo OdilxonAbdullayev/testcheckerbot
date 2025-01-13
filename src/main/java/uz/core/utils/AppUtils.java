@@ -170,6 +170,15 @@ public class AppUtils {
         }
     }
 
+    public static List<UserAnswer> getAllUserAnswersBySubjectId(Long subject_id) {
+        try (SqlSession session = getSqlSession().openSession()) {
+            return session.selectList("selectAllUserAnswersBySubjectId", subject_id);
+        } catch (Exception e) {
+            _logger.error(e.getMessage());
+            return Collections.emptyList();
+        }
+    }
+
     public static List<SubjectEntity> getMilliySertifikatList() {
         try (SqlSession session = getSqlSession().openSession()) {
             return session.selectList("selectMilliy", QuizType.MILLIY_SERTIFIKAT);

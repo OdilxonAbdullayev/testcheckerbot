@@ -66,7 +66,7 @@ public class AuthenticationFilterController {
                     String security_key = update.getMessage().getText().split(" ")[1];
                     keys.add(security_key);
                 }
-                if (update.hasMessage() && update.getMessage().getText().startsWith("fio*")) {
+                if (update.hasMessage() && update.getMessage().getText().toLowerCase().startsWith("fio*")) {
                     UserEntity entity = new UserEntity();
                     entity.setId(chatId);
                     entity.setStatus_id(1);

@@ -216,10 +216,15 @@ public class KeyboardService {
         deleteButton.setText(Constants.BotCommand.BUTTON_DELETE);
         deleteButton.setCallbackData(Constants.BotCommand.DELETE_TEST + security_key);
 
+        InlineKeyboardButton userAnswersList = new InlineKeyboardButton();
+        userAnswersList.setText("\uD83D\uDCE5Yuklab olish");
+        userAnswersList.setCallbackData(Constants.BotCommand.DOWNLOAD + security_key);
+
         InlineKeyboardButton backButton = new InlineKeyboardButton();
         backButton.setText(Constants.BotCommand.BACK_BUTTON_TEXT);
         backButton.setCallbackData(Constants.BotCommand.CALL_MAIN_MENU);
-        buttons.add(List.of(deleteButton, backButton));
+        buttons.add(List.of(userAnswersList, deleteButton));
+        buttons.add(List.of(backButton));
 
         inlineKeyboardMarkup.setKeyboard(buttons);
 

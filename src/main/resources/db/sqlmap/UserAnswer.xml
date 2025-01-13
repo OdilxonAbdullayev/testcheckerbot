@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="UserAnswer">
+
+    <!--    SELECT -->
+    <select id="selectUserAnswers" parameterType="map" resultType="uz.db.entity.UserAnswer">
+        SELECT *
+        FROM user_answers
+        WHERE 1 = 1
+        <if test="subject_id != null">
+            AND subject_id = #{subject_id}
+        </if>
+    </select>
+
+    <!-- INSERT -->
+    <insert id="insertUserAnswers" parameterType="map">
+        INSERT INTO user_answers (user_id,
+                                  subject_id,
+                                  subject_name,
+                                  all_answer_count,
+                                  correct_answer_count,
+                                  incorrect_answer_count,
+                                  ball,
+                                  percentage,
+                                  incorrect_answers_list,
+                                  allAnswersList)
+        VALUES (#{user_id},
+                #{subject_id},
+                #{subject_name},
+                #{all_answer_count},
+                #{correct_answer_count},
+                #{incorrect_answer_count},
+                #{ball},
+                #{percentage},
+                #{incorrect_answers_list},
+                #{allAnswersList})
+    </insert>
+
+    <!-- UPDATE -->
+    <update id="updateUserAnswers" parameterType="map">
+        UPDATE user_answers
+        SET subject_name           = #{subjectName},
+            all_answer_count       = #{allAnswerCount},
+            correct_answer_count   = #{correctAnswerCount},
+            incorrect_answer_count = #{incorrectAnswerCount},
+            ball                   = #{ball},
+            percentage             = #{percentage},
+            incorrect_answers_list = #{incorrectAnswersList},
+            allAnswersList         = #{allAnswersList}
+        WHERE id = #{id}
+    </update>
+
+</mapper>

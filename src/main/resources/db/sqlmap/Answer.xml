@@ -16,7 +16,7 @@
         SELECT a.*
         FROM answer a
         INNER JOIN subject s ON a.subject_id = s.id
-        WHERE 1 = 1
+        WHERE s.is_delete = 0
         <if test="subjectId != null">
             AND a.subject_id = #{subjectId}
         </if>

@@ -42,6 +42,7 @@ public class MessageHandler {
     private static final AnswerRepository answerRepository = AnswerRepository.getInstance();
     private static final SubjectRepository subjectRepository = SubjectRepository.getInstance();
     private static final CertificateService certificateService = CertificateService.getInstance();
+    private static final UserAnswerRepository userAnswerRepository = UserAnswerRepository.getInstance();
     private ResourceBundle rb;
     private TextService textService;
 
@@ -102,13 +103,15 @@ public class MessageHandler {
                     messageService.sendMessageToAdmin(user, PropertiesUtils.getAdmins(), textServiceResult, userAnswer);
                     Message message = messageService.sendMessage(getChatId(), "<b>⏬Sertifikat yuklanmoqda...</b>", true);
 
+                    saveUserAnswer(user, subjectEntity, allAnswerBySubjectId.size(), correctCount, incorrectCount, accuracyPercentage, totalScore, incorrectAnswers, userAnswer);
+
                     if (subjectEntity.getQuiz_type().equals(QuizType.ATTESTATSIYA)) {
                         SertificatAttestatsiyaEntity sertificatAttestatsiyaEntity = new SertificatAttestatsiyaEntity();
                         sertificatAttestatsiyaEntity.setFio(user.getUsername());
                         if (totalScore >= 60 && totalScore < 70) {
-                            sertificatAttestatsiyaEntity.setSort("Toifa 2");
+                            sertificatAttestatsiyaEntity.setSort("Toifa - 2");
                         } else if (totalScore >= 70 && totalScore < 80) {
-                            sertificatAttestatsiyaEntity.setSort("Toifa 1");
+                            sertificatAttestatsiyaEntity.setSort("Toifa - 1");
                         } else if (totalScore >= 80) {
                             sertificatAttestatsiyaEntity.setSort("Oliy toifa");
                         } else if (totalScore < 60) {
@@ -395,6 +398,35 @@ public class MessageHandler {
 
     }
 
+    private void saveUserAnswer(UserEntity user, SubjectEntity subjectEntity,
+                                int size, int correctCount, int incorrectCount, double accuracyPercentage,
+                                double totalScore, List<String> incorrectAnswers, String userAnswer) {
+        UserAnswer userAnswerEntity = new UserAnswer();
+        userAnswerEntity.setUser_id(user.getId());
+        userAnswerEntity.setSecurity_key(subjectEntity.getSecurity_key());
+        userAnswerEntity.setSubject_type(subjectEntity.getQuiz_type().getDisplayName());
+        userAnswerEntity.setSubject_id(subjectEntity.getId());
+        userAnswerEntity.setSubject_name(subjectEntity.getName());
+        userAnswerEntity.setAll_answer_count(size);
+        userAnswerEntity.setCorrect_answer_count(correctCount);
+        userAnswerEntity.setIncorrect_answer_count(incorrectCount);
+        userAnswerEntity.setBall(Float.parseFloat(String.format("%.1f", totalScore)));
+        userAnswerEntity.setPercentage(Float.parseFloat(String.format("%.2f", accuracyPercentage)));
+        String incorrectAnswerList = "";
+
+        if (incorrectAnswers.size() > 0) {
+            for (String incorrectAnswer : incorrectAnswers) {
+                incorrectAnswerList += incorrectAnswer;
+            }
+        }
+
+        userAnswerEntity.setIncorrect_answers_list(incorrectAnswerList);
+        userAnswerEntity.setAllAnswersList(userAnswer);
+        System.out.println("User: " + userAnswerEntity);
+        userAnswerRepository.insert(userAnswerEntity);
+    }
+
+
     private Map<String, Object> calculate(String answer, List<AnswerEntity> allAnswerBySubjectId) {
         float totalscore1To12 = 0;
         float totalscore13To17 = 0;
@@ -407,22 +439,22 @@ public class MessageHandler {
             float score = allAnswerBySubjectId.get(i).getScore();
 
             if (i > 0 && i <= 12) {
-                if (String.valueOf(userChar).equals(correctAnswer)) {
+                if (String.valueOf(userChar).equalsIgnoreCase(correctAnswer)) {
                     totalscore1To12 += score;
                 }
             }
             if (i > 12 && i <= 17) {
-                if (String.valueOf(userChar).equals(correctAnswer)) {
+                if (String.valueOf(userChar).equalsIgnoreCase(correctAnswer)) {
                     totalscore13To17 += score;
                 }
             }
             if (i > 17 && i <= 22) {
-                if (String.valueOf(userChar).equals(correctAnswer)) {
+                if (String.valueOf(userChar).equalsIgnoreCase(correctAnswer)) {
                     totalscore18To22 += score;
                 }
             }
             if (i > 33 && i <= 35) {
-                if (String.valueOf(userChar).equals(correctAnswer)) {
+                if (String.valueOf(userChar).equalsIgnoreCase(correctAnswer)) {
                     totalscore33To35 += score;
                 }
             }
@@ -496,7 +528,7 @@ public class MessageHandler {
             String correctAnswer = allAnswerBySubjectId.get(i).getAnswer();
             float score = allAnswerBySubjectId.get(i).getScore();
 
-            if (String.valueOf(userChar).equals(correctAnswer)) {
+            if (String.valueOf(userChar).equalsIgnoreCase(correctAnswer)) {
                 correctCount++;
                 totalScore += score;
             } else {

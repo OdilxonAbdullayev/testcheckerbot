@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="Common">
+
     <select id="selectAllStatistic" parameterType="map" resultType="uz.db.entity.AllStatisticEntity">
         SELECT
         (SELECT COUNT(*) FROM users) AS all_user_count,
@@ -11,26 +12,26 @@
     <select id="selectAttestatsiya" parameterType="map" resultType="uz.db.entity.SubjectEntity">
         select *
         from subject
-        where quiz_type like '%ATTESTATSIYA%'
+        where quiz_type like '%ATTESTATSIYA%' and is_delete = 0
     </select>
 
     <select id="selectMilliy" parameterType="map" resultType="uz.db.entity.SubjectEntity">
         select *
         from subject
-        where quiz_type like '%MILLIY_SERTIFIKAT%'
+        where quiz_type like '%MILLIY_SERTIFIKAT%' and is_delete = 0
     </select>
 
     <select id="selectSubjectsByName" parameterType="map" resultType="uz.db.entity.SubjectEntity">
         select *
         from subject
         where name like concat('%', #{name}, '%')
+          and is_deleted = 0
     </select>
-
 
     <select id="selectSubjectById" parameterType="map" resultType="uz.db.entity.SubjectEntity">
         SELECT *
         FROM subject
-        WHERE 1 = 1
+        WHERE 1 = 1 and is_deleted = 0
         <if test="id != null">
             AND id = #{id}
         </if>
@@ -39,7 +40,7 @@
     <select id="selectSubjectCreatedByAdminId" parameterType="map" resultType="uz.db.entity.SubjectEntity">
         SELECT *
         FROM subject
-        WHERE 1 = 1
+        WHERE 1 = 1 and is_deleted = 0
         <if test="created_user_id != null">
             AND created_user_id = #{created_user_id}
         </if>
@@ -63,4 +64,12 @@
             admin_messageId = #{admin_messageId}
         where id = #{id}
     </update>
+
+    <select id="selectAllUserAnswersBySubjectId" parameterType="map" resultType="uz.db.entity.UserAnswer">
+        select *
+        from user_answers
+        where subject_id = #{subject_id}
+        ORDER BY subject_name ASC, ball DESC
+    </select>
+
 </mapper>

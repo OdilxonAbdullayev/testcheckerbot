@@ -28,5 +28,6 @@
         <mapper resource="db/sqlmap/Channel.xml"/>
         <mapper resource="db/sqlmap/Common.xml"/>
         <mapper resource="db/sqlmap/Admin.xml"/>
+        <mapper resource="db/sqlmap/UserAnswer.xml"/>
     </mappers>
 </configuration>
