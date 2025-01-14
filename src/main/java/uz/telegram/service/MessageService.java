@@ -1,11 +1,13 @@
 package uz.telegram.service;
 
-import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
+import org.telegram.telegrambots.meta.api.methods.ParseMode;
+import org.telegram.telegrambots.meta.api.methods.send.*;
 import org.telegram.telegrambots.meta.api.objects.User;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRemove;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import uz.core.Constants;
+import uz.core.base.entity.BaseEntity;
 import uz.core.base.entity.DDLResponse;
 import uz.core.logger.LogManager;
 import uz.core.utils.PropertiesUtils;
@@ -14,9 +16,6 @@ import uz.db.entity.UserEntity;
 import org.json.JSONObject;
 import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
 import org.telegram.telegrambots.meta.api.methods.CopyMessage;
-import org.telegram.telegrambots.meta.api.methods.send.SendAudio;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.methods.send.SendVideo;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
 import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.Message;
@@ -64,15 +63,19 @@ public class MessageService {
         }
     }
 
-    public void sendMessageToAdmin(UserEntity user, List<AdminEntity> admins, String text) {
+    public void sendMessageToAdmin(UserEntity user, List<AdminEntity> admins, String text, String userAnswer) {
         String user_info = "Id: %s \nIsm familiya: %s \n\n".formatted(user.getId(), user.getUsername());
+        String adminresponse = user_info + text + "\n\n\uD83D\uDCDDBarcha javoblar: \n";
+        for (int i = 0; i < userAnswer.length(); i++) {
+            adminresponse += i + 1 + ". " + userAnswer.charAt(i) + "   ";
+        }
 
         try {
             for (AdminEntity admin : admins) {
                 SendMessage sendMessage = new SendMessage();
 
                 sendMessage.setChatId(admin.getId());
-                sendMessage.setText(user_info + text);
+                sendMessage.setText(adminresponse);
                 sendMessage.setParseMode("HTML");
 
                 BaseTelegramBot.getSender().execute(sendMessage);
@@ -342,4 +345,18 @@ public class MessageService {
             _logger.error(e.getMessage());
         }
     }
+
+    public void sendDocument(Long chatId, InputFile inputFile) {
+        SendDocument sendDocument = new SendDocument();
+        sendDocument.setChatId(chatId);
+        sendDocument.setCaption("<b>ℹ️Test haqida malumot</b>");
+        sendDocument.setParseMode(ParseMode.HTML);
+        sendDocument.setDocument(inputFile);
+        try {
+            BaseTelegramBot.getSender().execute(sendDocument);
+        } catch (Exception e) {
+            _logger.error(e.getMessage());
+        }
+    }
+
 }

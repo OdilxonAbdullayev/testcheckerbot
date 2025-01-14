@@ -18,4 +18,5 @@ public class SubjectEntity extends BaseEntity {
     private LocalDateTime created_date;
     private LocalDateTime update_date;
     private Long created_user_id;
+    private int is_delete;
 }

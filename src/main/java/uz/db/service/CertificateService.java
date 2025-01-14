@@ -26,8 +26,10 @@ public class CertificateService {
     @SneakyThrows
     public String getAttestatsiyaCertificate(SertificatAttestatsiyaEntity entity) {
         String encodedFio = URLEncoder.encode(entity.getFio(), StandardCharsets.UTF_8);
+        String encodeSort = URLEncoder.encode(entity.getSort(), StandardCharsets.UTF_8);
+
         String url = PropertiesUtils.getApiBaseUrl() + "/attestatsiya?fio=%s&sort=%s&overallScore=%s&for70Score=%s"
-                .formatted(encodedFio, entity.getSort(), entity.getOverallScore(), entity.getFor70Score());
+                .formatted(encodedFio, encodeSort, entity.getOverallScore(), entity.getFor70Score());
 
         return sendPostRequest(url);
     }

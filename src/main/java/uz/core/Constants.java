@@ -37,6 +37,7 @@ public interface Constants {
         String SHOW_BY_SUBJECT_NAME = "Fan nomi orqali saralash=";
         String BY_ATTESTATSIYA = "Attestatsiya orqali";
         String BY_MILLIY = "Milliy sertifikat orqali";
+        String DOWNLOAD = "Yuklab olish=";
     }
 
     interface ParseMode {

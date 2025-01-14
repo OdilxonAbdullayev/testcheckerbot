@@ -6,12 +6,11 @@
     <select id="selectSubject" parameterType="map" resultType="uz.db.entity.SubjectEntity">
         SELECT *
         FROM subject
-        WHERE 1 = 1
+        WHERE subject.is_delete = 0
         <if test="security_key != null">
             AND security_key = #{security_key}
         </if>
     </select>
-
 
     <!--   ACTIONS -->
     <insert id="insertSubject" parameterType="map">
@@ -29,8 +28,9 @@
 
     <update id="updateSubject" parameterType="map">
         UPDATE subject
-        SET name           = #{name},
-            update_date   = CURRENT_TIMESTAMP(),
+        SET name        = #{name},
+            is_delete   = #{is_delete},
+            update_date = CURRENT_TIMESTAMP()
         where id = #{id}
     </update>
 

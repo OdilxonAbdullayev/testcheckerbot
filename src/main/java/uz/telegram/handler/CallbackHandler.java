@@ -1,5 +1,11 @@
 package uz.telegram.handler;
 
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.telegram.telegrambots.meta.api.methods.send.SendDocument;
+import org.telegram.telegrambots.meta.api.objects.InputFile;
 import uz.core.base.entity.DDLResponse;
 import uz.core.logger.LogManager;
 import uz.core.utils.AppUtils;
@@ -15,6 +21,10 @@ import uz.telegram.service.MessageService;
 import uz.telegram.service.TextService;
 import uz.core.Constants;
 
+import javax.security.auth.Subject;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.*;
 
 
@@ -29,6 +39,7 @@ public class CallbackHandler {
     private static final AdminRepository adminRepository = AdminRepository.getInstance();
     private static final SubjectRepository subjectRepository = SubjectRepository.getInstance();
     private static final AnswerRepository answerRepository = AnswerRepository.getInstance();
+    private static final UserAnswerRepository userAnswerRepository = UserAnswerRepository.getInstance();
     private ResourceBundle rb;
     private TextService textService;
 
@@ -126,7 +137,12 @@ public class CallbackHandler {
                 if (optionalSubject.isPresent()) {
                     SubjectEntity subjectEntity = optionalSubject.get();
                     List<AnswerEntity> allAnswerBySubjectId = AppUtils.getAllAnswerBySubjectId(subjectEntity.getId());
-                    messageService.sendMessage(getChatId(), textService.getTestInfo(subjectEntity, allAnswerBySubjectId.size(), user.getUsername(), subjectEntity.getQuiz_type(), allAnswerBySubjectId), KeyboardService.quizDeleteButton(subjectEntity.getSecurity_key()));
+
+                    UserEntity userEntity = userRepository.getOne(new HashMap<>() {{
+                        put("id", subjectEntity.getCreated_user_id());
+                    }}).getData().orElseThrow();
+
+                    messageService.sendMessage(getChatId(), textService.getTestInfo(subjectEntity, allAnswerBySubjectId.size(), userEntity.getUsername(), subjectEntity.getQuiz_type(), allAnswerBySubjectId), KeyboardService.quizDeleteButton(subjectEntity.getSecurity_key()));
                     user.setStep(null);
                     userRepository.update(user);
                     return;
@@ -143,11 +159,10 @@ public class CallbackHandler {
 
                 if (optionalSubject.isPresent()) {
                     SubjectEntity subjectEntity = optionalSubject.get();
-                    List<AnswerEntity> allAnswerBySubjectId = AppUtils.getAllAnswerBySubjectId(subjectEntity.getId());
-                    for (int i = 0; i < allAnswerBySubjectId.size(); i++) {
-                        answerRepository.delete(allAnswerBySubjectId.get(i).getId());
-                    }
-                    subjectRepository.delete(subjectEntity.getId());
+                    subjectEntity.setIs_delete(1);
+
+                    subjectRepository.update(subjectEntity);
+
                     user.setStep(null);
                     userRepository.update(user);
                     messageService.sendMessage(getChatId(), textService.startMessage(), KeyboardService.getMainKeyboard(user));
@@ -203,6 +218,46 @@ public class CallbackHandler {
                 user.setStep(null);
                 userRepository.update(user);
                 return;
+            } else if (getData().contains(Constants.BotCommand.DOWNLOAD)) {
+                String security_key = String.valueOf(getData().split("=")[1]);
+                deleteMessage();
+
+                Optional<SubjectEntity> optionalSubject = subjectRepository.getOne(new HashMap<>() {{
+                    put("security_key", security_key);
+                }}).getData();
+
+                if (optionalSubject.isPresent()) {
+                    SubjectEntity subject = optionalSubject.get();
+                    List<UserAnswer> userAnswers = AppUtils.getAllUserAnswersBySubjectId(subject.getId());
+                    List<AnswerEntity> answerEntityList = AppUtils.getAllAnswerBySubjectId(subject.getId());
+                    StringBuilder allAnswer = new StringBuilder();
+
+                    for (int i = 0; i < answerEntityList.size(); i++) {
+                        allAnswer.append(i + 1).append(".").append(answerEntityList.get(i).getAnswer()).append("  ");
+                    }
+
+                    if (userAnswers.size() > 0) {
+                        byte[] excelData = exportToExcel(userAnswers, subject, String.valueOf(allAnswer));
+
+                        ByteArrayInputStream inputStream = new ByteArrayInputStream(excelData);
+                        InputFile inputFile = new InputFile(inputStream, "Malumot.xlsx");
+
+                        messageService.sendDocument(getChatId(), inputFile);
+
+                        user.setStep(null);
+                        userRepository.update(user);
+                        messageService.sendMessage(getChatId(), textService.startMessage(), KeyboardService.getMainKeyboard(user));
+                        return;
+                    } else {
+                        messageService.sendMessage(getChatId(), "Bu testga birorta foydalanuvchi javob bermagan❗️");
+                        user.setStep(null);
+                        userRepository.update(user);
+                        return;
+                    }
+
+                } else {
+                    _logger.error("Not found this subject by security_key!");
+                }
             }
 
         }
@@ -232,6 +287,57 @@ public class CallbackHandler {
 
     public String getCallBackQueryId() {
         return callbackQuery.getId();
+    }
+
+    public byte[] exportToExcel(List<UserAnswer> userAnswers, SubjectEntity subject, String allAnswers) {
+        Workbook workbook = new XSSFWorkbook();
+        Sheet sheet = workbook.createSheet("User Answers");
+
+        // Sarlavhalar
+        Row headerRow = sheet.createRow(0);
+        String[] columns = {
+                "Id", "Ism Familiya", "Fan", "Test kodi", "Test turi", "Jami savollar soni",
+                "To'g'ri javoblar soni", "Noto`g`ri javoblar soni", "Ball", "Foiz",
+                "Notog'ri javoblar", "Barcha javoblar", "Barcha tog'ri javoblar"
+        };
+
+        for (int i = 0; i < columns.length; i++) {
+            headerRow.createCell(i).setCellValue(columns[i]);
+        }
+
+        int rowNum = 1;
+        for (UserAnswer userAnswer : userAnswers) {
+            Long userId = userAnswer.getUser_id();
+            UserEntity userEntity = userRepository.getOne(new HashMap<>() {{
+                put("id", userId);
+            }}).getData().orElseThrow();
+
+            Row row = sheet.createRow(rowNum++);
+
+            row.createCell(0).setCellValue(userAnswer.getUser_id());
+            row.createCell(1).setCellValue(userEntity.getUsername());
+            row.createCell(2).setCellValue(userAnswer.getSubject_name());
+            row.createCell(3).setCellValue(subject.getSecurity_key());
+            row.createCell(4).setCellValue(subject.getQuiz_type().getDisplayName());
+            row.createCell(5).setCellValue(userAnswer.getAll_answer_count());
+            row.createCell(6).setCellValue(userAnswer.getCorrect_answer_count());
+            row.createCell(7).setCellValue(userAnswer.getIncorrect_answer_count());
+            row.createCell(8).setCellValue(userAnswer.getBall());
+            row.createCell(9).setCellValue(userAnswer.getPercentage() + "%");
+            row.createCell(10).setCellValue(userAnswer.getIncorrect_answers_list());
+            row.createCell(11).setCellValue(userAnswer.getAllAnswersList());
+            row.createCell(12).setCellValue(allAnswers);
+        }
+
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        try {
+            workbook.write(out);
+            workbook.close();
+        } catch (Exception e) {
+            _logger.error(e.getMessage());
+        }
+
+        return out.toByteArray(); // Excel faylni byte[] ko'rinishida qaytaradi
     }
 
 }

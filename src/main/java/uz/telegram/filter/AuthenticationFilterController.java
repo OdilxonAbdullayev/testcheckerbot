@@ -37,7 +37,7 @@ public class AuthenticationFilterController {
                 if (update.hasMessage() && update.getMessage().getText().startsWith("/start ")) {
                     String security_key = update.getMessage().getText().split(" ")[1];
                     user.setCurrent_security_key(security_key);
-                    SendMessage sendMessage = new SendMessage(chatId.toString(), "Yaxshi, endi test javoblarini yuboring❗️");
+                    SendMessage sendMessage = new SendMessage(chatId.toString(), "Yaxshi, endi test javoblarini yuboring❗️\n\nMisol: \nabbccdd \nyoki\n1a2b3c4d5a6b7d");
                     try {
                         BaseTelegramBot.getSender().execute(sendMessage);
                     } catch (Exception e) {
@@ -66,7 +66,7 @@ public class AuthenticationFilterController {
                     String security_key = update.getMessage().getText().split(" ")[1];
                     keys.add(security_key);
                 }
-                if (update.hasMessage() && update.getMessage().getText().startsWith("fio*")) {
+                if (update.hasMessage() && update.getMessage().getText().toLowerCase().startsWith("fio*")) {
                     UserEntity entity = new UserEntity();
                     entity.setId(chatId);
                     entity.setStatus_id(1);
@@ -87,7 +87,7 @@ public class AuthenticationFilterController {
                         _logger.error(e.getMessage());
                     }
                     if (keys.size() != 0) {
-                        SendMessage sendMessage2 = new SendMessage(chatId.toString(), "Endi test javoblarini yuboring❗️");
+                        SendMessage sendMessage2 = new SendMessage(chatId.toString(), "Endi test javoblarini yuboring❗️\n\nMisol: \nabbccdd \nyoki\n1a2b3c4d5a6b7d");
                         try {
                             BaseTelegramBot.getSender().execute(sendMessage2);
                         } catch (Exception e) {
