@@ -2,9 +2,6 @@ package uz.telegram.handler;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.checkerframework.checker.units.qual.A;
-import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
-import org.telegram.telegrambots.meta.api.objects.InputFile;
 import uz.core.Constants;
 import uz.core.base.entity.DDLResponse;
 import uz.core.logger.LogManager;
@@ -22,8 +19,6 @@ import uz.telegram.service.MessageService;
 import uz.telegram.service.TextService;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -120,13 +115,13 @@ public class MessageHandler {
                         sertificatAttestatsiyaEntity.setOverallScore(Float.valueOf(String.format("%.1f", totalScore)));
                         if (totalScore >= 86) {
                             sertificatAttestatsiyaEntity.setFor70Score(Float.valueOf(String.format("%.1f", (totalScore))));
+                        } else if (totalScore < 86) {
+                            sertificatAttestatsiyaEntity.setFor70Score(0F);
                         }
-                        sertificatAttestatsiyaEntity.setFor70Score(0F);
-
                         String base64Certificate = certificateService.getAttestatsiyaCertificate(sertificatAttestatsiyaEntity);
 
                         if (base64Certificate.equals("")) {
-                            messageService.sendMessage(getChatId(), "Xatolik yuz berdi❗\uFE0F");
+                            messageService.sendMessage(getChatId(), "Xatolik yuz berdi❗️");
                             user.setCurrent_security_key(null);
                             userRepository.update(user);
                             return;
