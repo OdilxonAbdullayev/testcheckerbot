@@ -9,9 +9,7 @@ import uz.db.entity.SertificatAttestatsiyaEntity;
 import uz.db.entity.SertificatTestCheckerMilliyDto;
 
 import java.io.*;
-import java.net.HttpURLConnection;
 import java.net.URI;
-import java.net.URL;
 import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -25,22 +23,20 @@ public class CertificateService {
 
     @SneakyThrows
     public String getAttestatsiyaCertificate(SertificatAttestatsiyaEntity entity) {
-        String encodedFio = URLEncoder.encode(entity.getFio(), StandardCharsets.UTF_8);
-        String encodeSort = URLEncoder.encode(entity.getSort(), StandardCharsets.UTF_8);
-
         String url = PropertiesUtils.getApiBaseUrl() + "/attestatsiya?fio=%s&sort=%s&overallScore=%s&for70Score=%s"
-                .formatted(encodedFio, encodeSort, entity.getOverallScore(), entity.getFor70Score());
+                .formatted(entity.getFio(), entity.getSort(), entity.getOverallScore(), entity.getFor70Score());
 
-        return sendPostRequest(url);
+        String encodeUrl = URLEncoder.encode(url, StandardCharsets.UTF_8);
+        return sendPostRequest(encodeUrl);
     }
 
     @SneakyThrows
     public String getMilliyCertificate(SertificatTestCheckerMilliyDto entity) {
-        String encodedFio = URLEncoder.encode(entity.getFio(), StandardCharsets.UTF_8);
         String url = PropertiesUtils.getApiBaseUrl() + "/milliy?part_1=%s&part_2=%s&part_3=%s&part_4=%s&overallScore=%s&fio=%s"
-                .formatted(entity.getPart_1(), entity.getPart_2(), entity.getPart_3(), entity.getPart_4(), entity.getOverallScore(), encodedFio);
+                .formatted(entity.getPart_1(), entity.getPart_2(), entity.getPart_3(), entity.getPart_4(), entity.getOverallScore(), entity.getFio());
 
-        return sendPostRequest(url);
+        String encodeUrl = URLEncoder.encode(url, StandardCharsets.UTF_8);
+        return sendPostRequest(encodeUrl);
     }
 
     private String sendPostRequest(String urlString) throws IOException, InterruptedException {
