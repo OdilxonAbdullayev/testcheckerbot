@@ -25,13 +25,13 @@
         select *
         from subject
         where name like concat('%', #{name}, '%')
-          and is_deleted = 0
+          and is_delete = 0
     </select>
 
     <select id="selectSubjectById" parameterType="map" resultType="uz.db.entity.SubjectEntity">
         SELECT *
         FROM subject
-        WHERE 1 = 1 and is_deleted = 0
+        WHERE 1 = 1 and is_delete = 0
         <if test="id != null">
             AND id = #{id}
         </if>
@@ -40,7 +40,7 @@
     <select id="selectSubjectCreatedByAdminId" parameterType="map" resultType="uz.db.entity.SubjectEntity">
         SELECT *
         FROM subject
-        WHERE 1 = 1 and is_deleted = 0
+        WHERE 1 = 1 and is_delete = 0
         <if test="created_user_id != null">
             AND created_user_id = #{created_user_id}
         </if>

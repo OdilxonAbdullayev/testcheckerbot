@@ -133,7 +133,7 @@ public class MessageHandler {
                         Map<String, Object> calculate = calculate(userAnswer, allAnswerBySubjectId);
                         float a = (float) calculate.get("1-12");
                         float b = (float) calculate.get("13-17");
-                        float c = (float) calculate.get("18-22");
+                        float c = (float) calculate.get("18-32");
                         float d = (float) calculate.get("33-35");
                         testCheckerMilliyDto.setPart_1(Float.valueOf(String.format("%.1f", (a))));
                         testCheckerMilliyDto.setPart_2(Float.valueOf(String.format("%.1f", (b))));
@@ -425,7 +425,7 @@ public class MessageHandler {
     private Map<String, Object> calculate(String answer, List<AnswerEntity> allAnswerBySubjectId) {
         float totalscore1To12 = 0;
         float totalscore13To17 = 0;
-        float totalscore18To22 = 0;
+        float totalscore18To32 = 0;
         float totalscore33To35 = 0;
 
         for (int i = 0; i < allAnswerBySubjectId.size(); i++) {
@@ -443,9 +443,9 @@ public class MessageHandler {
                     totalscore13To17 += score;
                 }
             }
-            if (i > 17 && i <= 22) {
+            if (i > 17 && i <= 32) {
                 if (String.valueOf(userChar).equalsIgnoreCase(correctAnswer)) {
-                    totalscore18To22 += score;
+                    totalscore18To32 += score;
                 }
             }
             if (i > 33 && i <= 35) {
@@ -459,7 +459,7 @@ public class MessageHandler {
         Map<String, Object> result = new HashMap<>();
         result.put("1-12", totalscore1To12);
         result.put("13-17", totalscore13To17);
-        result.put("18-22", totalscore18To22);
+        result.put("18-22", totalscore18To32);
         result.put("33-35", totalscore33To35);
 
         return result;

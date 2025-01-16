@@ -2,12 +2,7 @@ package uz.telegram.service;
 
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.methods.send.*;
-import org.telegram.telegrambots.meta.api.objects.User;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRemove;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
-import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import uz.core.Constants;
-import uz.core.base.entity.BaseEntity;
 import uz.core.base.entity.DDLResponse;
 import uz.core.logger.LogManager;
 import uz.core.utils.PropertiesUtils;
@@ -23,7 +18,6 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMa
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import uz.telegram.core.BaseTelegramBot;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.InputStream;
 import java.net.URI;
@@ -48,20 +42,20 @@ public class MessageService {
         sendMessage(chatId, response.getResponseMessage());
     }
 
-    public void sendMessage(Long chatId, String text) {
-        try {
-            SendMessage sendMessage = new SendMessage();
+        public void sendMessage(Long chatId, String text) {
+            try {
+                SendMessage sendMessage = new SendMessage();
 
-            sendMessage.setChatId(chatId);
-            sendMessage.setText(text);
-            sendMessage.setDisableWebPagePreview(true);
-            sendMessage.setParseMode("HTML");
+                sendMessage.setChatId(chatId);
+                sendMessage.setText(text);
+                sendMessage.setDisableWebPagePreview(true);
+                sendMessage.setParseMode("HTML");
 
-            BaseTelegramBot.getSender().execute(sendMessage);
-        } catch (Exception e) {
-            _logger.error(e.getMessage());
+                BaseTelegramBot.getSender().execute(sendMessage);
+            } catch (Exception e) {
+                _logger.error(e.getMessage());
+            }
         }
-    }
 
     public void sendMessageToAdmin(UserEntity user, List<AdminEntity> admins, String text, String userAnswer) {
         String user_info = "Id: %s \nIsm familiya: %s \n\n".formatted(user.getId(), user.getUsername());
